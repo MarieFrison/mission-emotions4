@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mission Émotions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800;900&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Layout: plateau-serpent projeté au tableau à gauche, colonne « tour de jeu » à droite ; les cartes s'ouvrent en grand au centre. */
+:root{
+  --bg:#f3f6fb; --surface:#ffffff; --surface-2:#eef2f9; --ink:#1d2340; --ink-soft:#56607f; --line:#d9e0ee;
+  --brush:#1d2340; --on-brush:#ffffff;
+  --m1:#3d97e8; --m1-soft:#dcecfb; --m2:#f2bd2c; --m2-soft:#fdf2cf; --m3:#4fbf6c; --m3-soft:#dcf3e2; --m4:#9b6ee0; --m4-soft:#ece2fb;
+  --pink:#ef5f8a; --pink-soft:#fde3eb; --orange:#f5873a; --orange-soft:#fde8d8; --teal:#2fb8be; --red:#e8524f;
+  --shadow:0 10px 30px -12px rgba(29,35,64,.28);
+  --font-display:"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;
+  --font-body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-hand:"Caveat","Comic Sans MS",cursive;
+  --r:18px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12152a; --surface:#1c2140; --surface-2:#252b4f; --ink:#eef0fb; --ink-soft:#a9b0d0; --line:#343b66;
+  --brush:#0b0d1d; --on-brush:#ffffff;
+  --m1-soft:#1d3554; --m2-soft:#463a17; --m3-soft:#1c4129; --m4-soft:#352a55;
+  --pink-soft:#4b2133; --orange-soft:#4a2f1c; --shadow:0 10px 30px -12px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12152a; --surface:#1c2140; --surface-2:#252b4f; --ink:#eef0fb; --ink-soft:#a9b0d0; --line:#343b66;
+  --brush:#0b0d1d; --on-brush:#ffffff;
+  --m1-soft:#1d3554; --m2-soft:#463a17; --m3-soft:#1c4129; --m4-soft:#352a55;
+  --pink-soft:#4b2133; --orange-soft:#4a2f1c; --shadow:0 10px 30px -12px rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.45;padding-inline:16px;padding-block:0 32px}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;letter-spacing:.01em;text-wrap:balance;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--m1);outline-offset:2px}
+.wrap{max-width:1280px;margin-inline:auto}
+
+/* ---------- logo brush ---------- */
+.logo{display:inline-flex;flex-direction:column;align-items:flex-start;gap:4px}
+.brush{background:var(--brush);color:var(--on-brush);font-family:var(--font-display);padding:.18em .55em .12em;
+  clip-path:polygon(1% 12%,8% 2%,30% 6%,55% 0,80% 5%,99% 3%,97% 40%,100% 88%,76% 97%,50% 92%,25% 100%,3% 94%,0 55%);line-height:1.05}
+.rainbow span:nth-child(1){color:#ffcf3f}.rainbow span:nth-child(2){color:#ff7aa2}.rainbow span:nth-child(3){color:#ff9a4a}
+.rainbow span:nth-child(4){color:#6fd08a}.rainbow span:nth-child(5){color:#55b4ff}.rainbow span:nth-child(6){color:#b892ff}
+.rainbow span:nth-child(7){color:#ffcf3f}.rainbow span:nth-child(8){color:#ff7aa2}
+.hand{font-family:var(--font-hand);font-weight:700}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:16px 12px}
+.topbar .brush{font-size:clamp(20px,3vw,28px)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:800;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,background .15s}
+.btn:hover{transform:translateY(-1px);background:var(--surface-2)}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-primary{background:var(--brush);color:var(--on-brush);border-color:var(--brush)}
+.btn-primary:hover{background:var(--brush);filter:brightness(1.25)}
+.btn-big{font-size:20px;padding:14px 26px;font-family:var(--font-display);font-weight:400;letter-spacing:.02em}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;border-color:transparent}
+
+/* ---------- setup ---------- */
+.setup{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:start;padding-block:12px}
+.hero{display:flex;flex-direction:column;gap:18px}
+.hero .brush{font-size:clamp(40px,7vw,78px)}
+.hero .sub{background:var(--m2);color:#1d2340;font-family:var(--font-display);font-size:clamp(18px,2.4vw,26px);padding:4px 16px;transform:rotate(-1.2deg);align-self:flex-start;border-radius:6px}
+.hero p.lead{font-size:18px;max-width:52ch;color:var(--ink-soft);margin:0}
+.missions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mcard{border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px;border:2px solid transparent}
+.mcard .tag{font-family:var(--font-display);font-size:13px;letter-spacing:.06em;background:var(--brush);color:var(--on-brush);align-self:flex-start;padding:2px 10px;border-radius:4px}
+.mcard h3{font-size:22px}
+.mcard p{margin:0;font-size:14px;color:var(--ink-soft)}
+.mcard.z1{background:var(--m1-soft);border-color:var(--m1)}.mcard.z2{background:var(--m2-soft);border-color:var(--m2)}
+.mcard.z3{background:var(--m3-soft);border-color:var(--m3)}.mcard.z4{background:var(--m4-soft);border-color:var(--m4)}
+.panel{background:var(--surface);border-radius:24px;padding:22px;box-shadow:var(--shadow);border:2px solid var(--line);display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel h2{font-size:26px}
+.field-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.label{font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft)}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:999px;padding:4px;gap:4px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:999px;padding:6px 14px;font-weight:900}
+.seg button[aria-pressed="true"]{background:var(--brush);color:var(--on-brush)}
+.team-edit{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--surface-2)}
+.team-edit input{width:100%;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;font-weight:800}
+.avatars{grid-column:2;display:flex;gap:4px;flex-wrap:wrap}
+.avatars button{width:34px;height:34px;border-radius:50%;border:2px solid transparent;background:var(--surface);font-size:18px;line-height:1;padding:0}
+.avatars button[aria-pressed="true"]{border-color:var(--ink)}
+.pawn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:22px;border:3px solid #fff;box-shadow:0 3px 8px -2px rgba(0,0,0,.35);flex:none}
+.engage{display:flex;flex-wrap:wrap;gap:6px}
+.engage span{background:var(--m3-soft);border-radius:999px;padding:4px 12px;font-weight:800;font-size:13px}
+.note{font-family:var(--font-hand);font-size:22px;color:var(--pink);transform:rotate(-2deg);line-height:1.1}
+
+/* ---------- game ---------- */
+.game{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+.board-wrap{background:var(--surface);border-radius:26px;padding:16px;box-shadow:var(--shadow);border:2px solid var(--line);min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.legend .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px 4px 4px;font-weight:800;font-size:13px}
+.legend .chip b{font-family:var(--font-display);font-weight:400;color:#1d2340;border-radius:999px;padding:1px 9px}
+.legend .z1{background:var(--m1-soft)}.legend .z1 b{background:var(--m1)}
+.legend .z2{background:var(--m2-soft)}.legend .z2 b{background:var(--m2)}
+.legend .z3{background:var(--m3-soft)}.legend .z3 b{background:var(--m3)}
+.legend .z4{background:var(--m4-soft)}.legend .z4 b{background:var(--m4)}
+.board{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;position:relative}
+.cell{aspect-ratio:1/0.74;border-radius:12px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;border:2px solid transparent;min-width:0;overflow:hidden}
+.cell .n{position:absolute;top:3px;left:6px;font-size:11px;font-weight:900;opacity:.55}
+.cell .ic{width:clamp(18px,2.6vw,30px);height:clamp(18px,2.6vw,30px)}
+.cell .lab{font-family:var(--font-display);font-size:clamp(9px,1.05vw,13px);letter-spacing:.03em;text-align:center;line-height:1}
+.cell.z1{background:var(--m1-soft);border-color:color-mix(in srgb,var(--m1) 45%,transparent)}
+.cell.z2{background:var(--m2-soft);border-color:color-mix(in srgb,var(--m2) 55%,transparent)}
+.cell.z3{background:var(--m3-soft);border-color:color-mix(in srgb,var(--m3) 45%,transparent)}
+.cell.z4{background:var(--m4-soft);border-color:color-mix(in srgb,var(--m4) 45%,transparent)}
+.cell.t-defi{background:var(--orange);color:#1d2340;border-color:transparent}
+.cell.t-joker{background:var(--surface);border:2px dashed var(--ink-soft)}
+.cell.t-parlons{background:color-mix(in srgb,var(--m3) 70%,var(--surface))}
+.cell.t-retour{background:var(--pink);color:#fff;border-color:transparent}
+.cell.t-chance{background:var(--m2);color:#1d2340;border-color:transparent}
+.cell.t-coeur{background:var(--pink-soft);border-color:var(--pink)}
+.cell.t-pause{background:color-mix(in srgb,var(--teal) 30%,var(--surface));border-color:var(--teal)}
+.cell.start,.cell.end{background:var(--brush);color:var(--on-brush);border-color:transparent}
+.cell.end{background:linear-gradient(135deg,#f2bd2c,#ef5f8a 55%,#9b6ee0)}
+.cell.end .lab,.cell.start .lab{font-size:clamp(10px,1.2vw,15px)}
+.cell .pawns{position:absolute;inset:auto 2px 2px 2px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px}
+.cell .pawns .pawn{width:clamp(22px,3vw,38px);height:clamp(22px,3vw,38px);font-size:clamp(12px,1.7vw,20px);border-width:2px}
+.cell.has-pawns .ic,.cell.has-pawns .lab{transform:translateY(-30%);opacity:.55}
+.pawn.active{animation:bob 1s ease-in-out infinite;z-index:2}
+@keyframes bob{50%{transform:translateY(-4px) scale(1.08)}}
+.cell.flash{animation:flash .6s ease}
+@keyframes flash{40%{box-shadow:0 0 0 4px var(--ink)}}
+.board-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.board-foot .note{font-size:20px}
+.keys{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.keys span{display:inline-flex;align-items:center;gap:4px}
+.keys i{width:12px;height:12px;border-radius:4px;display:inline-block}
+
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.turn{background:var(--surface);border-radius:26px;padding:18px;box-shadow:var(--shadow);border:3px solid var(--ink);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.turn .who{display:flex;align-items:center;gap:10px}
+.turn .who .pawn{width:54px;height:54px;font-size:28px}
+.turn h2{font-size:26px}
+.turn .zone{font-weight:900;font-size:13px;border-radius:999px;padding:3px 12px;color:#1d2340}
+.die{width:96px;height:96px;border-radius:20px;background:var(--surface);border:3px solid var(--ink);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:14px;box-shadow:0 6px 0 var(--ink)}
+.die i{width:16px;height:16px;border-radius:50%;background:var(--ink);place-self:center;visibility:hidden}
+.die{cursor:pointer;transition:transform .15s}.die:hover{transform:rotate(-6deg) scale(1.06)}.die.rolling{animation:shake .12s linear infinite}
+@keyframes shake{25%{transform:rotate(-8deg) translateY(-3px)}75%{transform:rotate(8deg) translateY(2px)}}
+.hint{font-size:12px;color:var(--ink-soft);font-weight:700}
+.teams{background:var(--surface);border-radius:22px;padding:14px;border:2px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.trow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px;border-radius:14px}
+.trow.current{background:var(--surface-2)}
+.trow .pawn{width:36px;height:36px;font-size:18px}
+.trow .nm{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--m1),var(--m2),var(--m3),var(--m4));background-size:320px 100%}
+.stats{display:flex;gap:6px;font-weight:900;font-size:13px}
+.stats span{display:inline-flex;align-items:center;gap:3px;background:var(--surface-2);border-radius:99px;padding:2px 8px}
+.stats svg{width:14px;height:14px}
+.done-badge{font-size:11px;font-weight:900;background:var(--m3);color:#1d2340;border-radius:99px;padding:1px 7px}
+
+/* ---------- modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(14,17,36,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;overflow-y:auto}
+.modal{width:min(860px,100%);max-height:calc(100vh - 32px);overflow-y:auto;background:var(--surface);border-radius:28px;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);border:4px solid var(--ink);animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:perspective(1400px) rotateY(80deg) scale(.7);opacity:0}60%{transform:perspective(1400px) rotateY(-8deg) scale(1.02)}}
+.mhead{padding:18px 22px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:2px dashed var(--line);flex-wrap:wrap}
+.mhead .kind{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.kind-tag{font-family:var(--font-display);font-size:20px;padding:4px 14px;border-radius:10px;color:#1d2340}
+.cat{font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:2px solid currentColor;border-radius:99px;padding:3px 10px}
+.mbody{padding:20px 24px;display:flex;flex-direction:column;gap:18px}
+.mfoot{padding:14px 22px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:2px dashed var(--line)}
+.mfoot .right{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.bigtext{font-size:clamp(22px,3vw,32px);font-weight:900;line-height:1.25;text-wrap:balance}
+.question{font-size:clamp(20px,2.6vw,28px);font-weight:800;line-height:1.3}
+.question p{margin:0 0 10px}
+.prompt{background:var(--surface-2);border-radius:16px;padding:12px 16px;font-weight:700}
+.prompt b{font-family:var(--font-display);font-weight:400;font-size:18px;display:block;margin-bottom:4px}
+.prompt ul{margin:6px 0 0;padding-left:20px}
+.stepper{display:flex;gap:6px;flex-wrap:wrap}
+.stepper span{font-weight:900;font-size:12px;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--ink-soft)}
+.stepper span.on{background:var(--brush);color:var(--on-brush)}
+.stepper span.ok{background:var(--m3-soft);color:var(--ink)}
+.emo-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.emo{border:3px solid transparent;border-radius:18px;padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--font-display);font-size:15px;color:#1d2340;transition:transform .15s}
+.emo svg{width:56px;height:56px}
+.emoji-face{display:inline-block;line-height:1;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+.emo .emoji-face{font-size:52px;transition:transform .2s}
+.emo:hover .emoji-face{transform:scale(1.18) rotate(-8deg)}
+.emo[aria-pressed="true"] .emoji-face{animation:wiggle .6s ease}
+@keyframes wiggle{25%{transform:rotate(-14deg) scale(1.2)}75%{transform:rotate(14deg) scale(1.2)}}
+.emo:hover{transform:translateY(-2px)}
+.emo[aria-pressed="true"]{border-color:var(--ink);transform:scale(1.04);box-shadow:0 6px 0 -1px var(--ink)}
+.emo-detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.edcard{border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px;color:#1d2340;border:3px solid rgba(29,35,64,.15)}
+.edcard header{display:flex;align-items:center;gap:8px}
+.edcard header svg{width:44px;height:44px;flex:none}
+.edcard header .emoji-face{font-size:42px}
+.edcard h3{font-size:22px}
+.edcard p{margin:0;font-size:14px;font-weight:700}
+.edcard ul{margin:0;padding-left:18px;font-size:14px;font-weight:700}
+.edcard .q{background:rgba(255,255,255,.55);border-radius:10px;padding:6px 10px;font-weight:900;font-size:14px}
+.strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.strat{text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:16px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.strat b{font-weight:900}
+.strat small{color:var(--ink-soft);font-weight:700;font-size:12.5px}
+.strat[aria-pressed="true"]{border-color:var(--m3);background:var(--m3-soft);box-shadow:inset 0 0 0 2px var(--m3)}
+.clear-msg{display:grid;gap:8px}
+.clear-msg div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;align-items:baseline;background:var(--surface-2);border-radius:12px;padding:10px 14px}
+.clear-msg div b{font-family:var(--font-display);font-weight:400;font-size:18px}
+.clear-msg em{font-style:normal;font-weight:800;color:var(--ink-soft)}
+.clear-msg strong{background:var(--m2-soft);border-radius:6px;padding:0 6px}
+.tokens{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.token{aspect-ratio:1;border-radius:50%;border:3px dashed rgba(29,35,64,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px;text-align:center;font-weight:900;font-size:12px;line-height:1.1;color:#1d2340;transition:transform .15s}
+.token svg{width:28px;height:28px}
+.token:hover{transform:scale(1.06) rotate(-3deg)}
+.token.suggested{border:3px solid var(--ink)}
+.token-won{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding-block:10px}
+.token-won .token{width:170px;font-size:18px;border-style:solid;animation:spin-in .7s cubic-bezier(.2,1.4,.4,1)}
+.token-won .token svg{width:54px;height:54px}
+@keyframes spin-in{from{transform:scale(.2) rotate(-200deg)}}
+.joker-card{border-radius:22px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;color:#1d2340;border:3px solid var(--ink);max-width:420px;margin-inline:auto;width:100%}
+.joker-card .jt{font-family:var(--font-display);font-size:28px}
+.joker-card .jd{font-size:19px;font-weight:800}
+.joker-card .jl{background:rgba(255,255,255,.65);border-radius:99px;padding:4px 14px;font-weight:900;font-size:14px}
+.jk-list{display:grid;gap:8px}
+.jk-list button{display:flex;gap:10px;align-items:center;text-align:left;border:2px solid var(--line);border-radius:14px;background:var(--surface);padding:8px 12px}
+.jk-list button b{font-family:var(--font-display);font-weight:400;font-size:17px}
+.jk-list small{display:block;color:var(--ink-soft);font-weight:700}
+.secret{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.secret .reveal{font-family:var(--font-display);font-size:26px;border-radius:14px;padding:6px 16px;color:#1d2340}
+.rank{display:grid;gap:6px;counter-reset:r}
+.rank li{list-style:none;display:grid;grid-template-columns:32px 44px minmax(0,1fr) auto;align-items:center;gap:8px;background:var(--surface-2);border-radius:12px;padding:4px 8px;font-weight:900}
+.rank li::before{counter-increment:r;content:counter(r);font-family:var(--font-display);font-size:20px;text-align:center}
+.rank li svg{width:38px;height:38px}
+.rank li .emoji-face{font-size:32px;text-align:center}
+.rank .mv{display:flex;gap:4px}
+.rank .mv button{border:2px solid var(--line);background:var(--surface);border-radius:8px;width:34px;height:30px;padding:0;font-weight:900}
+.rank-ends{display:flex;justify-content:space-between;font-weight:900;font-size:13px;color:var(--ink-soft)}
+.timer{display:inline-flex;align-items:center;gap:8px;font-weight:900;font-variant-numeric:tabular-nums}
+.timer .ring{width:40px;height:40px}
+.timer.low{color:var(--red)}
+.breath{display:flex;flex-direction:column;align-items:center;gap:16px;padding-block:10px}
+.breath .circle{width:220px;height:220px;max-width:70vw;max-height:70vw;border-radius:50%;background:radial-gradient(circle at 35% 35%,color-mix(in srgb,var(--teal) 40%,#fff),var(--teal));display:grid;place-items:center;transform:scale(.55);transition:transform 4s ease-in-out;color:#0d2d30;font-family:var(--font-display);font-size:30px;text-align:center}
+.breath .circle.in{transform:scale(1)}
+.breath .count{font-weight:900;color:var(--ink-soft)}
+.move-msg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding-block:10px}
+.move-msg .big{font-family:var(--font-display);font-size:64px;line-height:1}
+.pick-team{display:flex;flex-wrap:wrap;gap:8px}
+.pick-team button{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--line);border-radius:99px;background:var(--surface);padding:4px 14px 4px 4px;font-weight:900}
+.pick-team button .pawn{width:32px;height:32px;font-size:16px}
+.pick-team button[aria-pressed="true"]{border-color:var(--ink);background:var(--surface-2)}
+.kind-words{display:flex;flex-wrap:wrap;gap:6px}
+.kind-words span{background:var(--pink-soft);border-radius:99px;padding:4px 12px;font-weight:800}
+.other-teams{font-family:var(--font-hand);font-size:22px;color:var(--ink-soft)}
+
+/* ---------- rules / emotions reference ---------- */
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rules section{background:var(--surface-2);border-radius:16px;padding:12px 16px}
+.rules h3{font-size:20px;margin-bottom:4px}
+.rules ul,.rules ol{margin:0;padding-left:20px;font-weight:700;font-size:14.5px}
+.rules p{margin:0;font-weight:700;font-size:14.5px}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+
+/* ---------- end ---------- */
+.podium{display:grid;gap:10px}
+.prow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--surface-2);border-radius:18px;padding:12px}
+.prow h3{font-size:20px}
+.mini-tokens{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.mini-tokens span{font-size:11.5px;font-weight:900;border-radius:99px;padding:2px 8px;color:#1d2340}
+.chart{display:grid;gap:6px}
+.chart .row{display:grid;grid-template-columns:110px minmax(0,1fr) 28px;align-items:center;gap:8px;font-weight:900;font-size:14px}
+.chart .track{height:18px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.chart .track i{display:block;height:100%;border-radius:6px}
+.chart .v{font-variant-numeric:tabular-nums;text-align:right}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.empty{color:var(--ink-soft);font-weight:700}
+canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:80}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--brush);color:var(--on-brush);padding:10px 18px;border-radius:99px;font-weight:900;z-index:90;box-shadow:var(--shadow);max-width:calc(100% - 32px);text-align:center}
+
+
+/* ---------- couche ludique ---------- */
+.emoji{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;line-height:1}
+.cell .ce{font-size:clamp(18px,2.9vw,36px);line-height:1;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;transition:transform .2s}
+.cell:hover .ce{transform:scale(1.2) rotate(-6deg)}
+.cell.has-pawns .ce{transform:translateY(-30%);opacity:.6}
+.cell.t-sit .ce{opacity:.85}
+#floaters{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#floaters span{position:absolute;font-size:var(--sz,34px);opacity:.16;animation:drift var(--d,22s) linear infinite;animation-delay:var(--dl,0s);font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+@keyframes drift{0%{transform:translateY(110vh) rotate(0)}100%{transform:translateY(-20vh) rotate(360deg)}}
+#app,#layer{position:relative;z-index:1}
+.emo-strip{display:flex;flex-wrap:wrap;gap:6px;font-size:clamp(30px,4.5vw,46px)}
+.emo-strip button{border:0;background:var(--surface);border-radius:50%;width:1.55em;height:1.55em;display:grid;place-items:center;font-size:inherit;padding:0;box-shadow:0 4px 0 var(--line);animation:hop 2.4s ease-in-out infinite;animation-delay:calc(var(--i)*.18s)}
+.emo-strip button span{font-size:.72em}
+.emo-strip button:hover{animation:wiggle .5s}
+@keyframes hop{0%,70%,100%{transform:translateY(0)}80%{transform:translateY(-10px)}}
+.mascot{display:flex;align-items:center;gap:8px;text-align:left;width:100%}
+.mascot .m{font-size:38px;animation:hop 2.6s ease-in-out infinite}
+.mascot .bubble{background:var(--m2-soft);border:2px solid var(--m2);border-radius:16px 16px 16px 4px;padding:6px 12px;font-weight:800;font-size:14px;flex:1}
+.reactions{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.reactions .rl{font-weight:900;font-size:12px;color:var(--ink-soft);margin-right:2px}
+.reactions button{border:2px solid var(--line);background:var(--surface);border-radius:50%;width:42px;height:42px;font-size:22px;padding:0;display:grid;place-items:center;transition:transform .12s}
+.reactions button:hover{transform:scale(1.15)}
+.reactions button:active{transform:scale(.9)}
+.fly{position:fixed;z-index:95;pointer-events:none;font-size:38px;animation:fly 1.6s ease-out forwards;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+@keyframes fly{0%{transform:translate(0,0) scale(.6);opacity:1}100%{transform:translate(var(--dx),-260px) scale(1.5) rotate(var(--rot));opacity:0}}
+.rollpop{position:fixed;left:50%;top:42%;z-index:96;pointer-events:none;transform:translate(-50%,-50%);background:var(--brush);color:var(--on-brush);font-family:var(--font-display);font-size:clamp(46px,8vw,90px);padding:.1em .5em;border-radius:28px;box-shadow:0 12px 0 -2px var(--m2);animation:rollpop 1.1s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes rollpop{0%{transform:translate(-50%,-50%) scale(.2) rotate(-20deg)}35%{transform:translate(-50%,-50%) scale(1.1) rotate(4deg)}75%{opacity:1}100%{transform:translate(-50%,-80%) scale(1);opacity:0}}
+.kind-tag .emoji{margin-right:4px}
+.big-emo{font-size:72px;line-height:1;animation:hop 2s ease-in-out infinite}
+.mood{display:flex;gap:4px}
+.mood button{border:2px solid transparent;background:var(--surface);border-radius:50%;width:36px;height:36px;font-size:20px;padding:0}
+.mood button[aria-pressed="true"]{border-color:var(--ink);transform:scale(1.12)}
+.trow .mood-tag{font-size:16px;margin-left:4px}
+
+@media (max-width:980px){.game{grid-template-columns:minmax(0,1fr)}.side{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}.setup{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){
+  .emo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.emo .emoji-face{font-size:40px}
+  .tokens{grid-template-columns:repeat(3,minmax(0,1fr))}.token{font-size:11px}
+  .rules,.two,.missions{grid-template-columns:minmax(0,1fr)}
+  .clear-msg div{grid-template-columns:minmax(0,1fr)}
+  .cell .n{display:none}.cell .lab{display:none}
+  .board-wrap{padding:10px}.board{gap:4px}
+  .mbody{padding:16px}.chart .row{grid-template-columns:90px minmax(0,1fr) 24px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="floaters" aria-hidden="true"></div>
+<div class="wrap" id="app"></div>
+<div id="layer"></div>
+<canvas id="confetti" hidden></canvas>
+
+<script>
+/* ================= DONNÉES (reprises des cartes de l'enseignante) ================= */
+const EMOTIONS=[
+ {id:'joie',name:'Joie',art:'de la',color:'#f7c948',def:"quand quelque chose me fait plaisir.",feel:["de l'énergie","l'envie de partager","le sourire"],q:"Qu'est-ce qui peut me rendre heureux ?",v:10},
+ {id:'tristesse',name:'Tristesse',art:'de la',color:'#6fb4f2',def:"quand je perds quelque chose ou que je suis déçu.",feel:["de la fatigue","l'envie d'être seul","les larmes"],q:"De quoi puis-je avoir besoin ?",v:3},
+ {id:'colere',name:'Colère',art:'de la',color:'#f07470',def:"quand quelque chose me semble injuste ou que l'on me manque de respect.",feel:["de la tension","l'envie de répondre","de l'énervement"],q:"Comment éviter de réagir trop vite ?",v:2},
+ {id:'peur',name:'Peur',art:'de la',color:'#b391ec',def:"quand je me sens en danger ou dans une situation inconnue.",feel:["le cœur qui bat plus vite","des tensions","l'envie de fuir"],q:"Qu'est-ce qui pourrait m'aider ?",v:2},
+ {id:'surprise',name:'Surprise',art:'de la',color:'#f8a361',def:"quand quelque chose d'inattendu se produit.",feel:["de l'étonnement","de la curiosité","un moment de doute"],q:"Comment réagir face à l'inattendu ?",v:7},
+ {id:'degout',name:'Dégoût',art:'du',color:'#7fd394',def:"quand quelque chose me semble désagréable ou inacceptable.",feel:["le rejet","une grimace","l'envie de m'éloigner"],q:"Comment exprimer mon désaccord ?",v:2},
+ {id:'frustration',name:'Frustration',art:'de la',color:'#f28fb4',def:"quand je n'arrive pas à faire ce que je voudrais.",feel:["de l'impatience","l'envie d'abandonner","de la tension"],q:"Que puis-je faire quand je n'y arrive pas ?",v:3},
+ {id:'stress',name:'Stress',art:'du',color:'#5fd0d4',def:"quand je me sens dépassé ou quand je dois faire face à une pression.",feel:["des tensions","des difficultés à me concentrer","le cœur qui bat plus vite"],q:"Comment retrouver mon calme ?",v:3},
+ {id:'fierte',name:'Fierté',art:'de la',color:'#b3e070',def:"quand je réussis quelque chose ou que je fais un effort.",feel:["de la confiance","le sourire","l'envie de continuer"],q:"De quoi puis-je être fier ?",v:9},
+ {id:'deception',name:'Déception',art:'de la',color:'#93a9e0',def:"quand le résultat n'est pas celui que j'espérais.",feel:["de la tristesse","un manque de motivation","le besoin de temps"],q:"Comment rebondir après un échec ?",v:3},
+];
+const CATS={
+ 'Classe':'#3d97e8','Amis':'#4fbf6c','PFMP / Entreprise':'#ef5f8a','Vie quotidienne':'#d9a514','Environnement':'#3fa65a',
+ 'Groupe':'#9b6ee0','Client':'#f5873a','Santé / Bien-être':'#2fb8be','Respect':'#3fa65a','Communication':'#ef5f8a','Objectif':'#d9a514','Numérique':'#3d97e8','Sécurité':'#e8524f'};
+const SITUATIONS=[
+ [1,'Classe',"Tu arrives en classe et tu réalises que tu as oublié ton devoir."],
+ [2,'Classe',"Le professeur te demande de participer à l'oral devant toute la classe."],
+ [3,'Classe',"Tu reçois une bonne note à un contrôle."],
+ [4,'Classe',"Un camarade se moque de toi devant les autres."],
+ [5,'Classe',"Tu ne comprends pas un exercice et tu as peur de poser une question."],
+ [6,'Amis',"Un ami ne te répond plus alors que vous aviez prévu de vous voir."],
+ [7,'Amis',"Tes amis organisent une sortie mais tu n'es pas invité(e)."],
+ [8,'Amis',"Tu es en désaccord avec un ami sur un sujet important."],
+ [9,'Amis',"Un ami te fait une surprise pour ton anniversaire."],
+ [10,'Amis',"Tu te sens seul(e) pendant la pause."],
+ [11,'PFMP / Entreprise',"Tu dois accueillir ton premier client."],
+ [12,'PFMP / Entreprise',"Un client se montre désagréable avec toi."],
+ [13,'PFMP / Entreprise',"Ton tuteur te félicite pour ton travail."],
+ [14,'PFMP / Entreprise',"Tu fais une erreur dans une commande."],
+ [15,'PFMP / Entreprise',"On te demande de faire une tâche que tu ne connais pas."],
+ [16,'Vie quotidienne',"Tu as un imprévu et tu es en retard."],
+ [17,'Vie quotidienne',"Tu dois prendre les transports en commun et il y a un problème sur la ligne."],
+ [18,'Vie quotidienne',"Tu dois faire quelque chose que tu n'aimes pas (ménage, paperasse…)."],
+ [19,'Vie quotidienne',"Tu apprends une très bonne nouvelle."],
+ [20,'Vie quotidienne',"Tu te sens fatigué(e) et tu n'as plus envie de rien faire."],
+ [21,'Numérique',"Tu as un problème avec ton ordinateur ou un logiciel et tu n'arrives pas à le résoudre."],
+ [22,'Groupe',"Tu dois travailler en équipe mais tout le monde n'est pas d'accord."],
+ [23,'Environnement',"Tu vois un déchet par terre alors qu'il y a une poubelle à côté."],
+ [24,'Client',"Un client te pose une question à laquelle tu ne sais pas répondre."],
+ [25,'Sécurité',"Tu remarques une situation dangereuse dans le magasin ou l'atelier."],
+ [26,'Vie quotidienne',"Tu n'as pas assez de temps pour faire tout ce que tu dois faire (cours, maison, loisirs…)."],
+ [27,'Santé / Bien-être',"Tu ne te sens pas bien (fatigue, mal de tête, stress…) et tu dois quand même aller en cours ou en stage."],
+ [28,'Communication',"Tu aimerais donner ton avis mais tu n'oses pas parler devant les autres."],
+ [29,'Objectif',"Tu n'arrives pas à atteindre un objectif malgré tes efforts."],
+ [30,'Respect',"Tu es témoin d'une remarque blessante ou d'un manque de respect envers quelqu'un."],
+ [31,'Classe',"Tu dois présenter un travail à l'oral devant la classe et tu es très stressé(e)."],
+ [32,'Environnement',"Tu vois un camarade gaspiller du matériel (papier, nourriture, eau…)."],
+ [33,'PFMP / Entreprise',"Ton responsable te donne une nouvelle tâche que tu ne sais pas faire."],
+ [34,'Vie quotidienne',"Tu es en retard et tu dois te dépêcher pour ne pas rater ton bus ou ton train."],
+ [35,'Groupe',"Tu n'es pas d'accord avec les choix de ton groupe pour un projet."],
+ [36,'Client',"Un client est mécontent et te parle de manière désagréable."],
+ [37,'Santé / Bien-être',"Tu te sens fatigué(e) et tu as du mal à te concentrer en cours ou au travail."],
+ [38,'Respect',"Tu es témoin de moqueries envers un camarade."],
+ [39,'Communication',"Tu as une mauvaise nouvelle à annoncer à un ami."],
+ [40,'Objectif',"Tu as fait des efforts mais tu n'obtiens pas le résultat espéré."],
+ [41,'Groupe',"Tu es mis(e) à l'écart dans un groupe et tu n'es pas invité(e) à participer."],
+ [42,'PFMP / Entreprise',"On te demande de faire une tâche que tu trouves désagréable."],
+ [43,'Numérique',"Tu reçois un message désagréable sur les réseaux sociaux ou dans un groupe de discussion."],
+ [44,'Environnement',"Tu vois un camarade gaspiller de la nourriture à la cantine."],
+ [45,'Vie quotidienne',"Tu as beaucoup de devoirs ou de tâches à faire et tu ne sais pas par où commencer."],
+ [46,'Santé / Bien-être',"Tu te sens mal physiquement ou tu es malade en plein cours ou en stage."],
+ [47,'Client',"Un client est impatient, il parle fort et te fait des remarques."],
+ [48,'Groupe',"Tu n'es pas d'accord avec les idées des autres lors d'un travail en groupe."],
+ [49,'Objectif',"Tu échoues à un contrôle, à une évaluation ou tu n'obtiens pas le résultat que tu espérais."],
+ [50,'Vie quotidienne',"Tu dois prendre la parole devant du monde (classe, réunion, présentation) et tu te sens très stressé(e)."],
+].map(([n,cat,text])=>({n,cat,text}));
+const DIFFICULT=SITUATIONS.filter(s=>![3,9,13,19].includes(s.n));
+const DEFIS=[
+ [1,"Mime une émotion sans parler. Les autres doivent deviner laquelle !","À toi de jouer !",'secret'],
+ [2,"Explique une émotion sans dire son nom.","Trouve les bons mots !",'secret'],
+ [3,"Donne trois situations qui peuvent provoquer de la colère.","À toi d'imaginer !"],
+ [4,"Montre une technique pour te calmer (respiration, étirements, compter jusqu'à 10…).","Prends un moment !"],
+ [5,"Joue une scène : un client mécontent. Un autre joueur essaie de le calmer.","En scène !"],
+ [6,"Transforme cette phrase en une phrase positive et professionnelle : « C'est pas mon problème ! »","À toi de reformuler !"],
+ [7,"Donne deux solutions pour gérer le stress.","Des idées ?"],
+ [8,"Fais deviner une émotion à ton équipe avec un seul mot.","À vous de deviner !",'secret'],
+ [9,"Imagine une affiche avec un message positif pour le bien-être au lycée ou en entreprise.","Crée et inspire !"],
+ [10,"Raconte une expérience où tu as surmonté une difficulté. Qu'est-ce qui t'a aidé ?","Ton histoire compte !"],
+ [11,"Classe ces émotions de la plus agréable à la moins agréable.","À toi de classer !",'rank10'],
+ [12,"Donne un conseil à un camarade qui se sent stressé avant un contrôle ou un oral.","Soutenir, c'est important !"],
+ [13,"Trouve un geste ou une action gentille que tu peux faire aujourd'hui pour quelqu'un.","Un petit geste, un grand effet !"],
+ [14,"Complète la phrase : « Quand je ressens …, je peux … pour me sentir mieux. »","À toi d'écrire !"],
+ [15,"Invente un slogan positif autour des émotions.","Sois créatif(ve) !"],
+ [16,"Fais deviner une émotion avec des dessins.","À toi de créer !",'secret'],
+ [17,"Trouve un titre positif à cette situation difficile.","Tout est une question de point de vue !",'situation'],
+ [18,"Joue une scène en binôme : une personne est stressée, l'autre l'aide à se calmer.","Ensemble, c'est plus facile !"],
+ [19,"Classe ces émotions de la plus agréable à la moins agréable et explique ton choix.","Pourquoi ?",'rank5'],
+ [20,"Invente un slogan ou une phrase motivante sur les émotions.","À toi les mots !"],
+ [21,"Trouve 3 choses qui te font du bien quand tu te sens stressé(e).","Prends soin de toi !"],
+ [22,"Raconte un moment où tu as été fier(ère) de toi (sans entrer dans les détails personnels).","Tu peux être fier(ère) !"],
+ [23,"Propose une solution originale à cette situation : « Je n'ose pas parler devant les autres. »","Il existe toujours plusieurs solutions !"],
+ [24,"Trouve une phrase pour demander poliment de l'aide dans une situation difficile.","Oser demander, c'est positif !"],
+ [25,"Mime une activité qui te fait du bien, sans parler. Les autres doivent deviner.","Montre sans parler !"],
+ [26,"Imagine un super-pouvoir qui t'aiderait à mieux gérer tes émotions. Quel est-il ?","Chacun a des ressources !"],
+ [27,"Fais une liste de 5 mots gentils que tu peux dire à un camarade qui va mal.","Les mots ont du pouvoir !"],
+ [28,"Invente une fin positive à cette situation : « Je fais une erreur devant tout le monde. »","On peut toujours rebondir !"],
+ [29,"Propose une idée pour rendre ton quotidien plus agréable au lycée ou en entreprise.","Des idées pour un meilleur quotidien !"],
+ [30,"Remercie un membre de ton équipe pour une qualité ou une aide qu'il t'apporte.","Dire merci, ça fait du bien !"],
+].map(([n,text,tag,special])=>({n,text,tag,special}));
+const JOKERS=[
+ [1,"Aide d'un camarade","Tu peux demander l'aide d'un camarade pour répondre.","Ensemble, on va plus loin !"],
+ [2,"Passe ton tour","Tu peux passer ton tour si tu ne te sens pas à l'aise.","Prends soin de toi !",'skip'],
+ [3,"Double essai","Tu peux donner deux réponses ou deux solutions.","Deux idées, c'est mieux !"],
+ [4,"Change de carte","Tu n'es pas inspiré(e) ? Tu peux échanger ta carte situation ou défi contre une autre.","Une nouvelle chance !",'swap'],
+ [5,"Avis du groupe","Tu peux demander l'avis de tout ton groupe avant de répondre.","Plus d'idées ensemble !"],
+ [6,"Temps supplémentaire","Tu as 1 minute de plus pour réfléchir.","Prendre le temps, c'est bien !",'time'],
+ [7,"Indice","Tu peux demander un indice à l'animateur.","Un petit indice pour t'aider !"],
+ [8,"Exemple","Tu peux demander un exemple pour t'aider à répondre.","Les exemples, c'est concret !"],
+ [9,"Toute l'équipe","Toute ton équipe peut t'aider à répondre ensemble.","L'union fait la force !"],
+ [10,"Seconde chance","Tu peux recommencer ton défi ou ta réponse.","On apprend en essayant !"],
+ [11,"Carte solution","Tu peux t'appuyer sur les cartes solutions pour t'aider dans ta réponse.","Des idées à portée de main !",'solutions'],
+ [12,"Carte émotion","Tu peux consulter les cartes émotions pour identifier ce que tu ressens ou ce que l'autre peut ressentir.","Les émotions sont des indices !",'emotions'],
+ [13,"Change de rôle","Tu peux choisir de répondre en utilisant un autre rôle (client, ami, collègue…).","Se mettre à la place de l'autre !"],
+ [14,"Libre expression","Tu peux t'exprimer autrement : par un dessin, un mime ou un mot-clé.","Il n'y a pas qu'une seule façon de s'exprimer !"],
+ [15,"Question au choix","Tu peux choisir une autre question parmi les cartes situations.","À toi de choisir !",'choose'],
+ [16,"Meilleur coéquipier","Tu offres ce joker à un camarade de ton choix pour l'aider.","Un petit geste qui fait plaisir !"],
+ [17,"Pause bien-être","Prends 30 secondes pour faire une respiration ou un étirement avant de répondre.","Un esprit calme, de meilleures idées !"],
+ [18,"Mot mystère","Tu peux donner ta réponse en un seul mot si tu préfères.","Parfois, un mot suffit !"],
+ [19,"Observateur","Tu peux demander à un camarade d'observer ta réponse et de te donner un retour positif.","Un regard bienveillant, ça aide !"],
+ [20,"Carte bonus","Tu gagnes 2 cases supplémentaires sur le plateau !","En route vers la réussite !",'bonus'],
+].map(([n,title,text,tag,effect])=>({n,title,text,tag,effect}));
+const JK_COLORS=['#cfe6fb','#fbd3e0','#d6f2dc','#fdeec2','#e5d9fb','#fddcc6'];
+const PARLONS=[
+ ["Un élève se trompe devant toute la classe.","Comment pourrait-il se sentir ?","Que pourrais-tu lui dire pour l'aider ?"],
+ ["Est-ce que demander de l'aide est un signe de faiblesse ?","Pourquoi ?"],
+ ["Quand tu es stressé(e), qu'est-ce qui peut t'aider à retrouver ton calme ?"],
+ ["As-tu déjà ressenti la peur ?","Comment as-tu réagi ?","Qu'est-ce qui t'aide à te sentir en sécurité ?"],
+ ["Comment fais-tu quand tu es en colère ?","Qu'est-ce qui peut t'aider à la gérer ?"],
+ ["Est-ce que tu penses qu'il est normal d'avoir des émotions ?","Pourquoi ?"],
+ ["Comment réagis-tu quand tu n'y arrives pas ?","Qu'est-ce qui pourrait t'aider à ne pas baisser les bras ?"],
+ ["Penses-tu qu'il est facile de parler de ses émotions autour de soi ?","Pourquoi ?"],
+ ["Que peux-tu faire quand tu te sens triste ?","Qu'est-ce qui te fait du bien ?"],
+ ["Est-ce que tu arrives à exprimer ce que tu ressens ?","Qu'est-ce qui pourrait t'aider à le faire plus facilement ?"],
+ ["Qu'est-ce qui te rend heureux(se) au lycée ?","Pourquoi ?"],
+ ["Comment te sens-tu dans ton groupe de classe ?","Qu'est-ce que tu aimes dans tes camarades ?"],
+ ["Qu'est-ce qui te motive le plus pour venir en cours ?","Qu'est-ce qui te donne envie d'apprendre ?"],
+ ["As-tu déjà vécu une situation difficile au lycée ?","Comment l'as-tu gérée ? Que t'a-t-elle appris ?"],
+ ["Quelles sont les personnes à qui tu peux parler quand tu ne te sens pas bien ?","Pourquoi est-ce important d'en parler ?"],
+ ["Qu'est-ce que tu aimerais améliorer chez toi ?","Que pourrais-tu faire pour y arriver ?"],
+ ["Comment réagis-tu lorsqu'un camarade n'est pas d'accord avec toi ?","Que peux-tu faire pour bien en discuter ?"],
+ ["Qu'est-ce que tu as appris sur toi grâce à un stage (PFMP) ?","Qu'est-ce qui t'a plu ? Qu'est-ce qui a été plus difficile ?"],
+ ["Quel métier t'intéresse en ce moment ?","Qu'est-ce qui te plaît dans ce métier ?","Quelles qualités faut-il avoir selon toi ?"],
+ ["Si tu pouvais donner un conseil à un élève plus jeune que toi, quel serait-il ?","Pourquoi ?"],
+].map((lines,i)=>({n:i+1,lines}));
+const TOKENS=[
+ ['Mission réussie !','#fbe08a','star'],['Bonne idée !','#bfe0fb','thumb'],['Belle écoute !','#fbc9d8','heart'],['Super solution !','#c9efcf','bulb'],
+ ['Esprit d\'équipe !','#ddd0fa','team'],['Bravo ! Tu as relevé un défi !','#fdd4b4','cup'],['Tu t\'es exprimé(e) !','#fbc9d8','bubble'],['Tu es resté(e) calme !','#c9efcf','smile'],
+ ['Objectif atteint !','#bfe0fb','target'],['Bon choix !','#fbe08a','check'],['Tu as aidé un camarade !','#fbc9d8','hand'],['Tu as partagé une idée !','#c6f0f2','sun'],
+ ['Tu progresses !','#c9efcf','sprout'],['Tu as fait un effort !','#ddd0fa','heart'],['Attitude positive !','#fdd4b4','smile'],['Tu as bien réfléchi !','#bfe0fb','book'],
+ ['Tu relèves le défi !','#c9efcf','mount'],['Tu fais la différence !','#fbc9d8','star'],['Ensemble, on avance !','#fbe08a','team'],['Tu as mobilisé tes compétences !','#c6f0f2','bulb'],
+ ['Continue comme ça !','#fbc9d8','burst'],['Tu es une source positive !','#fdd4b4','heart'],['Un pas de plus vers tes objectifs !','#ddd0fa','chart'],['Tu peux être fier(ère) de toi !','#bfe0fb','rainbow'],
+].map(([t,c,i],k)=>({id:k,t,c,i}));
+const STRATS=[
+ ['Respirer lentement','Inspirer 4 s, souffler 6 s, plusieurs fois.'],
+ ['Compter jusqu\'à 10','Laisser passer la première réaction.'],
+ ['Faire une pause','M\'éloigner un moment pour revenir plus calme.'],
+ ['En parler à quelqu\'un','Un ami, un adulte, le tuteur, la famille.'],
+ ['Demander de l\'aide','Oser poser la question, c\'est une force.'],
+ ['Dire ce que je ressens','Avec le message clair : « je » plutôt que « tu ».'],
+ ['Écouter l\'autre','Reformuler pour être sûr de bien comprendre.'],
+ ['Prendre du recul','Est-ce que ce sera encore grave dans une semaine ?'],
+ ['Découper en petites étapes','Commencer par une seule chose.'],
+ ['M\'organiser','Faire une liste, prévoir, anticiper.'],
+ ['Bouger, me défouler','Marcher, faire du sport, m\'étirer.'],
+ ['Me changer les idées','Musique, dessin, une activité que j\'aime.'],
+ ['Me rappeler mes réussites','Je suis déjà arrivé(e) à faire des choses difficiles.'],
+ ['Voir l\'erreur comme un apprentissage','Je corrige et je retiens la leçon.'],
+ ['Chercher un compromis','Trouver une solution qui convient à tous.'],
+ ['Rester poli et professionnel','Garder un ton calme, même face à un client.'],
+ ['Prévenir un adulte','Moqueries, harcèlement, message blessant : je ne reste pas seul(e).'],
+ ['Partager ma joie, remercier','Profiter du moment et le dire aux autres.'],
+].map(([t,d],k)=>({id:k,t,d}));
+const KIND_WORDS=["Tu peux y arriver !","Je suis là.","Tu es capable !","Tu n'es pas seul(e).","Tu fais de ton mieux.","Merci pour ton aide.","J'aime ton idée.","Tu m'as fait rire."];
+const MISSIONS=[
+ null,
+ {n:1,title:'Je reconnais',sub:'Identifier et nommer mes émotions.',quote:'« Mettre un mot sur ce que je ressens, c\'est déjà avancer. »',c:'var(--m1)',soft:'var(--m1-soft)'},
+ {n:2,title:'Je comprends',sub:'Identifier ce qui peut déclencher une émotion.',quote:'« Comprendre mes émotions m\'aide à mieux me connaître. »',c:'var(--m2)',soft:'var(--m2-soft)'},
+ {n:3,title:'Je cherche une solution',sub:'Trouver une réaction adaptée.',quote:'« J\'ai le choix dans ma façon de réagir. »',c:'var(--m3)',soft:'var(--m3-soft)'},
+ {n:4,title:'J\'agis',sub:'Mettre en pratique dans une situation.',quote:'« Je suis capable de gérer mes émotions et de communiquer positivement. »',c:'var(--m4)',soft:'var(--m4-soft)'},
+];
+// Plateau : 0 = départ, 41 = arrivée. S situation, P parlons-en, D défi, J joker, R retour -2, C chance +1, B bienveillance, Z pause
+const LAYOUT='S P S D C S J S Z R S P S B D S J S C R S P D S Z S J B S R S D P S C J S Z R S'.split(' ');
+const END=41;
+const TYPE_INFO={
+ S:{cls:'t-sit',lab:'',name:'Situation'},P:{cls:'t-parlons',lab:'PARLONS-EN',name:'Parlons-en'},D:{cls:'t-defi',lab:'DÉFI',name:'Défi'},
+ J:{cls:'t-joker',lab:'JOKER',name:'Joker'},R:{cls:'t-retour',lab:'−2',name:'Retour'},C:{cls:'t-chance',lab:'+1',name:'Chance'},
+ B:{cls:'t-coeur',lab:'MOT GENTIL',name:'Bienveillance'},Z:{cls:'t-pause',lab:'PAUSE',name:'Pause'}};
+const TEAM_PRESETS=[
+ {name:'Équipe Bleue',color:'#3d97e8'},{name:'Équipe Rose',color:'#ef5f8a'},{name:'Équipe Verte',color:'#4fbf6c'},
+ {name:'Équipe Jaune',color:'#f2bd2c'},{name:'Équipe Violette',color:'#9b6ee0'}];
+const AVATARS=['😎','🤩','🥳','🤖','👽','🦄','🐯','🦊','🐼','🐸','🚀','⚡','🔥','🎮','⚽','🎧'];
+const EMOJI={joie:'😄',tristesse:'😢',colere:'😠',peur:'😨',surprise:'😲',degout:'🤢',frustration:'😤',stress:'😰',fierte:'😎',deception:'😞'};
+const CELL_EMO={P:'💬',D:'🎯',J:'🃏',R:'⏪',C:'⭐',B:'💖',Z:'😌'};
+const KIND_EMO={situation:'❓',parlons:'💬',defi:'🎯',joker:'🃏',pause:'😌',kind:'💖',token:'🏅',finish:'🏆'};
+const MOODS=['😄','🙂','😐','😕','😴'];
+const CHEERS=['À vous de jouer ! 🎲','Allez, on y croit ! 💪','Chaque émotion compte ! 💛','On s\'écoute et on avance ! 🤝','Respire… et lance le dé ! 😌','Vous gérez ! 😎','Pas de mauvaise réponse ici ! ✨','Prêts pour la mission ? 🚀'];
+const REACTS=['👏','❤️','😂','🔥','💡','🤝','😮'];
+
+/* ================= ICÔNES ================= */
+const I={
+ rules:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>',
+ heartBtn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5s1.3 2 3.5 2 3.5-2 3.5-2M9 9.5h.01M15 9.5h.01"/></svg>',
+ sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9c1.5 1.5 1.5 4.5 0 6"/></svg>',
+ mute:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 10l4 4M21 10l-4 4"/></svg>',
+ reset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4h4"/></svg>',
+ hour:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9"/></svg>',
+ joker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="5" width="11" height="15" rx="2" transform="rotate(-8 8 12)"/><rect x="10" y="4" width="11" height="15" rx="2" transform="rotate(8 15 11)"/></svg>',
+ token:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7l1.5 3.2 3.5.4-2.6 2.4.7 3.5L12 14.8 8.9 16.5l.7-3.5L7 10.6l3.5-.4z" fill="currentColor" stroke="none"/></svg>',
+ S:'<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><rect x="7" y="4" width="18" height="24" rx="3" fill="currentColor" fill-opacity=".12"/><path d="M13 12.5a3 3 0 1 1 4 2.8c-1 .4-1 1.2-1 2.2M16 21.5v.01" stroke-linecap="round"/></svg>',
+ P:'<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M4 7h15v10H10l-4 4v-4H4z" fill="currentColor" fill-opacity=".25"/><path d="M22 12h6v10h-2v4l-4-4h-7v-3"/></svg>',
+ D:'<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="15" cy="17" r="10"/><circle cx="15" cy="17" r="5.5"/><circle cx="15" cy="17" r="1.5" fill="currentColor"/><path d="M15 17L27 5M23 4.5l4 .5.5 4"/></svg>',
+ J:'<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="4" y="7" width="14" height="20" rx="2.5" transform="rotate(-10 11 17)" fill="currentColor" fill-opacity=".1"/><rect x="13" y="5" width="14" height="20" rx="2.5" transform="rotate(8 20 15)" fill="currentColor" fill-opacity=".2"/><path d="M20 11l1.3 2.7 3 .4-2.2 2 .6 3-2.7-1.5-2.6 1.5.5-3-2.2-2 3-.4z" fill="currentColor" stroke="none"/></svg>',
+ R:'<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 9L5 15l6 6"/><path d="M5 15h14a7 7 0 0 1 0 14h-3"/></svg>',
+ C:'<svg class="ic" viewBox="0 0 32 32" fill="currentColor"><path d="M16 3l3.8 8 8.7 1-6.4 6 1.7 8.6L16 22.3l-7.8 4.3L9.9 18l-6.4-6 8.7-1z"/></svg>',
+ B:'<svg class="ic" viewBox="0 0 32 32" fill="#ef5f8a"><path d="M16 28S3 20 3 11.5A6.5 6.5 0 0 1 16 8a6.5 6.5 0 0 1 13 3.5C29 20 16 28 16 28z"/></svg>',
+ Z:'<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="16" cy="16" r="12" fill="currentColor" fill-opacity=".15"/><path d="M11 13h.01M21 13h.01M10.5 19c2 3 9 3 11 0"/></svg>',
+ flag:'<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 29V4"/><path d="M7 5h18l-4 5 4 5H7" fill="currentColor" fill-opacity=".3"/></svg>',
+ cup:'<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4h12v8a6 6 0 0 1-12 0z" fill="currentColor" fill-opacity=".3"/><path d="M10 7H5c0 4 2 6 5 6M22 7h5c0 4-2 6-5 6M16 18v5M11 28h10M13 23h6v5h-6z"/></svg>',
+};
+const TOKEN_ICONS={
+ star:'<path d="M16 4l3.6 7.4 8.1 1.1-5.9 5.6 1.4 8L16 22.3 8.8 26.1l1.4-8L4.3 12.5l8.1-1.1z" fill="#f2bd2c" stroke="#1d2340" stroke-width="1.6"/>',
+ thumb:'<path d="M6 14h5v13H6zM11 14l5-9c2 0 3 1.5 2.5 4L18 13h7c1.5 0 2.5 1.4 2 3l-2.5 8.5c-.4 1.5-1.6 2.5-3 2.5H11" fill="#fcd9b6" stroke="#1d2340" stroke-width="1.6" stroke-linejoin="round"/>',
+ heart:'<path d="M16 27S4 19.5 4 11.5A6 6 0 0 1 16 8.5a6 6 0 0 1 12 3C28 19.5 16 27 16 27z" fill="#e8524f" stroke="#1d2340" stroke-width="1.6"/>',
+ bulb:'<path d="M16 4a8 8 0 0 0-5 14.2V22h10v-3.8A8 8 0 0 0 16 4z" fill="#f7d14a" stroke="#1d2340" stroke-width="1.6"/><path d="M12 25h8M13 28h6" stroke="#1d2340" stroke-width="1.8" stroke-linecap="round"/>',
+ team:'<circle cx="9" cy="11" r="3.5" fill="#3d97e8"/><circle cx="16" cy="9" r="4" fill="#ef5f8a"/><circle cx="23" cy="11" r="3.5" fill="#4fbf6c"/><path d="M3 25c0-5 3-8 6-8s6 3 6 8zM10 25c0-6 3-10 6-10s6 4 6 10zM17 25c0-5 3-8 6-8s6 3 6 8z" fill="#1d2340" opacity=".85"/>',
+ cup:'<path d="M10 4h12v8a6 6 0 0 1-12 0z" fill="#f2bd2c" stroke="#1d2340" stroke-width="1.6"/><path d="M10 7H5c0 4 2 6 5 6M22 7h5c0 4-2 6-5 6M16 18v5M11 28h10" fill="none" stroke="#1d2340" stroke-width="1.8" stroke-linecap="round"/>',
+ bubble:'<path d="M4 7h24v14H13l-6 5v-5H4z" fill="#fff" stroke="#1d2340" stroke-width="1.8" stroke-linejoin="round"/><circle cx="10" cy="14" r="1.6" fill="#1d2340"/><circle cx="16" cy="14" r="1.6" fill="#1d2340"/><circle cx="22" cy="14" r="1.6" fill="#1d2340"/>',
+ smile:'<circle cx="16" cy="16" r="12" fill="#5cc777" stroke="#1d2340" stroke-width="1.6"/><path d="M11 18.5c2.5 3 7.5 3 10 0M11 12.5h.01M21 12.5h.01" stroke="#1d2340" stroke-width="2.2" stroke-linecap="round"/>',
+ target:'<circle cx="16" cy="16" r="12" fill="#e8524f" stroke="#1d2340" stroke-width="1.6"/><circle cx="16" cy="16" r="7.5" fill="#fff"/><circle cx="16" cy="16" r="3.5" fill="#e8524f"/>',
+ check:'<circle cx="16" cy="16" r="12" fill="#3fa65a" stroke="#1d2340" stroke-width="1.6"/><path d="M10 16.5l4 4 8-9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+ hand:'<path d="M3 17l7-6 6 3 6-3 7 6-7 6-6-2-6 2z" fill="#fcd9b6" stroke="#1d2340" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 11l6 5M22 11l-6 5" stroke="#1d2340" stroke-width="1.4"/>',
+ sun:'<circle cx="16" cy="16" r="7" fill="#f7d14a" stroke="#1d2340" stroke-width="1.6"/><path d="M16 3v4M16 25v4M3 16h4M25 16h4M7 7l3 3M22 22l3 3M25 7l-3 3M7 25l3-3" stroke="#f2a20c" stroke-width="2.2" stroke-linecap="round"/>',
+ sprout:'<path d="M16 28V15" stroke="#2f8a47" stroke-width="2.4"/><path d="M16 16C16 9 10 6 5 7c0 6 5 9 11 9zM16 14c0-6 5-9 11-8 0 6-5 8-11 8z" fill="#4fbf6c" stroke="#1d2340" stroke-width="1.4"/><path d="M9 28h14" stroke="#8a5a34" stroke-width="3" stroke-linecap="round"/>',
+ book:'<path d="M4 7c4-1 8-1 12 2 4-3 8-3 12-2v17c-4-1-8-1-12 2-4-3-8-3-12-2z" fill="#fff" stroke="#1d2340" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 9v17" stroke="#1d2340" stroke-width="1.6"/>',
+ mount:'<path d="M3 27l10-16 5 7 3-4 8 13z" fill="#3d97e8" stroke="#1d2340" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 11V4l6 2.5-6 2" fill="#e8524f" stroke="#1d2340" stroke-width="1.4"/>',
+ burst:'<path d="M16 2l3 6 6-3-1 7 7 1-5 5 5 5-7 1 1 7-6-3-3 6-3-6-6 3 1-7-7-1 5-5-5-5 7-1-1-7 6 3z" fill="#f7d14a" stroke="#1d2340" stroke-width="1.4" stroke-linejoin="round"/>',
+ chart:'<path d="M5 27h22" stroke="#1d2340" stroke-width="2"/><rect x="7" y="18" width="4" height="8" fill="#3d97e8"/><rect x="14" y="13" width="4" height="13" fill="#4fbf6c"/><rect x="21" y="8" width="4" height="18" fill="#9b6ee0"/><path d="M6 14l7-6 4 3 8-7M21 4h4v4" fill="none" stroke="#1d2340" stroke-width="1.8" stroke-linecap="round"/>',
+ rainbow:'<path d="M3 24a13 13 0 0 1 26 0" fill="none" stroke="#e8524f" stroke-width="3"/><path d="M6.5 24a9.5 9.5 0 0 1 19 0" fill="none" stroke="#f2bd2c" stroke-width="3"/><path d="M10 24a6 6 0 0 1 12 0" fill="none" stroke="#4fbf6c" stroke-width="3"/><path d="M13.5 24a2.5 2.5 0 0 1 5 0" fill="none" stroke="#3d97e8" stroke-width="3"/>',
+};
+const tokIcon=k=>`<svg viewBox="0 0 32 32">${TOKEN_ICONS[k]||TOKEN_ICONS.star}</svg>`;
+
+// Visages d'émotions dessinés
+function faceSvg(id,color){
+ const ink='#1d2340';const sw='stroke="'+ink+'" stroke-width="3.2" stroke-linecap="round" fill="none"';
+ const eyesDot=`<circle cx="37" cy="44" r="4" fill="${ink}"/><circle cx="63" cy="44" r="4" fill="${ink}"/>`;
+ const parts={
+  joie:`<path d="M30 44q7-8 14 0M56 44q7-8 14 0" ${sw}/><path d="M30 58q20 22 40 0z" fill="${ink}"/><path d="M38 66q12 6 24 0" fill="#ef5f8a"/>`,
+  tristesse:`<path d="M30 34l12-5M70 34l-12-5" ${sw}/>${eyesDot}<path d="M36 70q14-11 28 0" ${sw}/><path d="M66 52q4 7 0 9q-4-2 0-9z" fill="#3d97e8"/>`,
+  colere:`<path d="M28 32l15 8M72 32l-15 8" ${sw}/>${eyesDot}<path d="M36 68q14-8 28 0" ${sw}/><path d="M36 66h28" ${sw}/>`,
+  peur:`<path d="M30 30q7-5 14-2M70 30q-7-5-14-2" ${sw}/><circle cx="37" cy="45" r="7" fill="#fff" stroke="${ink}" stroke-width="3"/><circle cx="63" cy="45" r="7" fill="#fff" stroke="${ink}" stroke-width="3"/><circle cx="37" cy="46" r="3" fill="${ink}"/><circle cx="63" cy="46" r="3" fill="${ink}"/><path d="M38 70q4-6 8 0q4-6 8 0q4-6 8 0" ${sw}/>`,
+  surprise:`<path d="M29 28q8-7 15 0M56 28q8-7 15 0" ${sw}/><circle cx="37" cy="44" r="5" fill="${ink}"/><circle cx="63" cy="44" r="5" fill="${ink}"/><ellipse cx="50" cy="67" rx="7" ry="9" fill="${ink}"/>`,
+  degout:`<path d="M30 36l13 2M57 34q7-5 14 0" ${sw}/><path d="M32 44h10" ${sw}/><circle cx="63" cy="44" r="4" fill="${ink}"/><path d="M34 66q8-6 16 0t16-2" ${sw}/><path d="M48 66q4 10 9 2" fill="#ef5f8a" stroke="${ink}" stroke-width="2.5"/>`,
+  frustration:`<path d="M29 34l14 5M71 34l-14 5" ${sw}/><path d="M32 45h10M58 45h10" ${sw}/><path d="M34 68l5-5 5 5 5-5 5 5 5-5 5 5" ${sw}/>`,
+  stress:`<path d="M31 32q6 3 12 0M57 32q6 3 12 0" ${sw}/>${eyesDot}<path d="M35 67q4-5 8 0t8 0t8 0t8 0" ${sw}/><path d="M76 26q5 8 0 10q-5-2 0-10z" fill="#3d97e8"/>`,
+  fierte:`<path d="M30 30l12-3M70 30l-12-3" ${sw}/><path d="M31 45q6 5 12 0M57 45q6 5 12 0" ${sw}/><path d="M36 61q14 12 28 0" ${sw}/>`,
+  deception:`<path d="M30 36l12-3M70 36l-12-3" ${sw}/><path d="M31 46q6 3 12 0M57 46q6 3 12 0" ${sw}/><path d="M38 68q12-5 24 0" ${sw}/>`,
+ };
+ return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="${color}" stroke="${ink}" stroke-width="3.5"/>${parts[id]||''}</svg>`;
+}
+
+function face(id){return `<span class="emoji-face" aria-hidden="true">${EMOJI[id]||'🙂'}</span>`}
+/* ================= ÉTAT ================= */
+const SAVE_KEY='mission-emotions-v1';
+let S=null; // état de la partie
+let ui={busy:false,sound:true,modal:null,timer:null};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const zoneOf=p=>p<=0?1:p>=END?4:Math.min(4,Math.ceil(p/10));
+const emo=id=>EMOTIONS.find(e=>e.id===id);
+function save(){try{if(S)localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function loadSaved(){try{const t=localStorage.getItem(SAVE_KEY);return t?JSON.parse(t):null}catch(e){return null}}
+function clearSaved(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
+function draw(kind){
+ const src={situation:SITUATIONS,parlons:PARLONS,defi:DEFIS,joker:JOKERS}[kind];
+ if(!S.decks[kind]||!S.decks[kind].length)S.decks[kind]=shuffle(src.map(x=>x.n));
+ const n=S.decks[kind].pop();return src.find(x=>x.n===n);
+}
+
+/* ================= SON ================= */
+let actx=null;
+function beep(freqs,dur=.09,type='triangle'){
+ if(!ui.sound)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+ let t=actx.currentTime;freqs.forEach(f=>{const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;
+ g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+dur);t+=dur*.85})}catch(e){}
+}
+const sfx={step:()=>beep([660],.05),win:()=>beep([523,659,784,1046],.12),token:()=>beep([784,1046,1318],.1),back:()=>beep([440,330],.12,'sine'),open:()=>beep([523,784],.08)};
+
+/* ================= SETUP ================= */
+let setupDraft={count:3,timer:90,teams:TEAM_PRESETS.map((t,i)=>({...t,avatar:AVATARS[i]}))};
+function renderSetup(){
+ const saved=loadSaved();
+ const resume=saved&&saved.phase==='game';
+ $('#app').innerHTML=`
+ <header class="topbar"><span class="logo"><span class="brush">MISSION <span class="rainbow">${[...'ÉMOTIONS'].map(c=>`<span>${c}</span>`).join('')}</span></span></span>
+  <div class="tools"><button class="btn" data-a="rules">${I.rules}Règles du jeu</button><button class="btn" data-a="emotions">${I.heartBtn}Les 10 émotions</button></div></header>
+ <main class="setup">
+  <section class="hero">
+   <h1 class="brush">MISSION<br><span class="rainbow">${[...'ÉMOTIONS'].map(c=>`<span>${c}</span>`).join('')}</span></h1>
+   <span class="sub">Comprendre ce que je ressens pour mieux agir.</span>
+   <div class="emo-strip">${EMOTIONS.map((e,i)=>`<button style="--i:${i};background:${e.color}" data-a="react" data-v="${EMOJI[e.id]}" title="${e.name}"><span class="emoji">${EMOJI[e.id]}</span></button>`).join('')}</div>
+   <p class="lead">Un plateau, un dé et 50 situations de la vie au lycée, en PFMP et au quotidien. Plus on avance, plus la mission demande : d'abord nommer l'émotion, puis la comprendre, chercher une solution et enfin agir.</p>
+   <div class="missions">${[1,2,3,4].map(z=>`<div class="mcard z${z}"><span class="tag">MISSION ${z} · CASES ${(z-1)*10+1} À ${z*10}</span><h3>${MISSIONS[z].title}</h3><p>${MISSIONS[z].sub}</p></div>`).join('')}</div>
+   <p class="note">Il n'y a pas de bonne ou de mauvaise réponse. On partage et on s'écoute !</p>
+  </section>
+  <section class="panel" aria-labelledby="cfg">
+   <h2 id="cfg">Préparer la partie</h2>
+   ${resume?`<div class="prompt"><b>Une partie est en cours</b>${saved.teams.map(t=>esc(t.name)).join(', ')} · tour ${saved.round||1}<div class="field-row" style="margin-top:8px"><button class="btn btn-primary" data-a="resume">Reprendre la partie</button><button class="btn" data-a="discard">Effacer</button></div></div>`:''}
+   <div class="field-row"><span class="label">Nombre d'équipes</span><div class="seg" role="group">${[2,3,4,5].map(n=>`<button data-a="count" data-v="${n}" aria-pressed="${setupDraft.count===n}">${n}</button>`).join('')}</div></div>
+   <div style="display:grid;gap:8px">${setupDraft.teams.slice(0,setupDraft.count).map((t,i)=>`
+    <div class="team-edit"><span class="pawn" style="background:${t.color}">${t.avatar}</span>
+     <input id="team-${i}" value="${esc(t.name)}" maxlength="22" aria-label="Nom de l'équipe ${i+1}" data-team="${i}">
+     <div class="avatars">${AVATARS.map(a=>`<button data-a="avatar" data-team="${i}" data-v="${a}" aria-pressed="${t.avatar===a}" aria-label="Pion ${a}">${a}</button>`).join('')}</div>
+     <div class="avatars" style="align-items:center;gap:8px"><span class="label">Météo du jour</span><span class="mood">${MOODS.map(md=>`<button data-a="moodpick" data-team="${i}" data-v="${md}" aria-pressed="${t.mood===md}" aria-label="Humeur ${md}">${md}</button>`).join('')}</span></div></div>`).join('')}</div>
+   <div class="field-row"><span class="label">Sablier</span><div class="seg" role="group">${[[0,'Sans'],[60,'1 min'],[90,'1 min 30'],[120,'2 min']].map(([v,l])=>`<button data-a="timer" data-v="${v}" aria-pressed="${setupDraft.timer===v}">${l}</button>`).join('')}</div></div>
+   <div><span class="label">Nos engagements</span><div class="engage" style="margin-top:6px">${['Écouter sans se moquer','Respecter la parole de chacun','Être bienveillant','Partager nos idées','Pouvoir passer son tour','Profiter du moment'].map(e=>`<span>${e}</span>`).join('')}</div></div>
+   <button class="btn btn-primary btn-big" data-a="start">Lancer la mission</button>
+   <p class="hint" style="margin:0">Astuce : projetez le jeu au tableau. La barre d'espace lance le dé.</p>
+  </section>
+ </main>`;
+}
+
+function startGame(){
+ const teams=setupDraft.teams.slice(0,setupDraft.count).map(t=>({name:(t.name||'Équipe').trim()||'Équipe',color:t.color,avatar:t.avatar,mood:t.mood||'',pos:0,tokens:[],jokers:[],finished:0,cards:0}));
+ S={phase:'game',teams,turn:0,round:1,decks:{},timer:setupDraft.timer,finishOrder:0,stats:{emo:{},strat:{},cards:0,defis:0,parlons:0},lastRoll:null};
+ save();renderGame();
+}
+
+/* ================= JEU ================= */
+function cellPos(i){const row=Math.floor(i/7);const col=row%2===0?i%7:6-i%7;return{row,col}}
+function renderGame(){
+ const t=S.teams[S.turn];const z=zoneOf(t.pos);
+ $('#app').innerHTML=`
+ <header class="topbar"><span class="logo"><span class="brush">MISSION <span class="rainbow">${[...'ÉMOTIONS'].map(c=>`<span>${c}</span>`).join('')}</span></span></span>
+  <div class="tools"><button class="btn" data-a="rules">${I.rules}Règles</button><button class="btn" data-a="emotions">${I.heartBtn}Les émotions</button>
+  <button class="btn" data-a="sound" aria-label="Son">${ui.sound?I.sound:I.mute}</button><button class="btn" data-a="bilan">${I.token}Bilan</button><button class="btn btn-ghost" data-a="newgame">${I.reset}Nouvelle partie</button></div></header>
+ <main class="game">
+  <section class="board-wrap" aria-label="Plateau">
+   <div class="legend">${[1,2,3,4].map(k=>`<span class="chip z${k}"><b>${k}</b>${MISSIONS[k].title}</span>`).join('')}</div>
+   <div class="board" id="board">${renderCells()}</div>
+   <div class="board-foot"><div class="keys"><span><b class="emoji">😄</b>Situation</span>${['P','D','J','B','Z','C','R'].map(k=>`<span><b class="emoji">${CELL_EMO[k]}</b>${TYPE_INFO[k].name}${k==='R'?' −2':k==='C'?' +1':''}</span>`).join('')}</div>
+   <span class="note">« ${MISSIONS[z].quote.replace(/[«»]/g,'').trim()} »</span></div>
+  </section>
+  <aside class="side">
+   <div class="turn" aria-live="polite">
+    <div class="mascot"><span class="m emoji">🤖</span><span class="bubble">${CHEERS[(S.round+S.turn)%CHEERS.length]}</span></div>
+    <span class="label">Tour ${S.round} · au tour de</span>
+    <div class="who"><span class="pawn" style="background:${t.color}">${t.avatar}</span><h2>${esc(t.name)}</h2></div>
+    <span class="zone" style="background:${MISSIONS[z].c}">Mission ${z} · ${MISSIONS[z].title}</span>
+    <button class="die" id="die" data-a="roll" aria-label="Lancer le dé" title="Clique pour lancer le dé">${'<i></i>'.repeat(9)}</button>
+    <button class="btn btn-primary btn-big" data-a="roll" id="rollBtn" ${ui.busy?'disabled':''}>Lancer le dé</button>
+    <span class="hint">ou appuie sur la barre d'espace</span>
+   </div>
+   <div class="teams">${S.teams.map((tm,i)=>`
+    <div class="trow ${i===S.turn?'current':''}"><span class="pawn" style="background:${tm.color}">${tm.avatar}</span>
+     <div style="min-width:0"><div class="nm">${esc(tm.name)}${tm.mood?`<span class="mood-tag emoji" title="Météo du jour">${tm.mood}</span>`:''} ${tm.finished?`<span class="done-badge">Arrivée n°${tm.finished}</span>`:''}</div>
+      <div class="bar"><i style="width:${Math.round(tm.pos/END*100)}%"></i></div></div>
+     <div class="stats"><span title="Jetons">${I.token}${tm.tokens.length}</span><span title="Jokers">${I.joker}${tm.jokers.length}</span></div></div>`).join('')}</div>
+  </aside>
+ </main>`;
+ setDie(S.lastRoll||1);
+}
+function renderCells(){
+ const cells=[];
+ for(let i=0;i<=END;i++){
+  const {row,col}=cellPos(i);
+  const here=S.teams.map((t,k)=>({t,k})).filter(o=>o.t.pos===i);
+  let cls,inner;
+  if(i===0){cls='start';inner=`<span class="ce">🏁</span><span class="lab">DÉPART</span>`}
+  else if(i===END){cls='end';inner=`<span class="ce">🏆</span><span class="lab">MISSION ACCOMPLIE</span>`}
+  else{const ty=LAYOUT[i-1];cls=`z${zoneOf(i)} ${TYPE_INFO[ty].cls}`;inner=`<span class="n">${i}</span><span class="ce">${ty==='S'?Object.values(EMOJI)[i%10]:CELL_EMO[ty]}</span>${TYPE_INFO[ty].lab?`<span class="lab">${TYPE_INFO[ty].lab}</span>`:''}`}
+  cells.push(`<div class="cell ${cls} ${here.length?'has-pawns':''}" id="c${i}" style="grid-row:${row+1};grid-column:${col+1}" title="Case ${i}">${inner}
+   <div class="pawns">${here.map(o=>`<span class="pawn ${o.k===S.turn?'active':''}" style="background:${o.t.color}" title="${esc(o.t.name)}">${o.t.avatar}</span>`).join('')}</div></div>`);
+ }
+ return cells.join('');
+}
+function refreshBoard(flash){const b=$('#board');if(b)b.innerHTML=renderCells();if(flash!=null){const c=$('#c'+flash);c&&c.classList.add('flash')}}
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function setDie(v){const d=$('#die');if(!d)return;[...d.children].forEach((p,i)=>p.style.visibility=PIPS[v].includes(i)?'visible':'hidden');d.setAttribute('aria-label','Dé : '+v)}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+async function roll(){
+ if(ui.busy||ui.modal||S.phase!=='game')return;
+ ui.busy=true;$('#rollBtn')&&($('#rollBtn').disabled=true);
+ const d=$('#die');d&&d.classList.add('rolling');
+ let v=1;for(let k=0;k<(reduced?1:9);k++){v=1+Math.floor(Math.random()*6);setDie(v);beep([300+k*40],.03,'square');await sleep(70)}
+ d&&d.classList.remove('rolling');S.lastRoll=v;setDie(v);rollPop(v);
+ await moveBy(S.turn,v);
+ land();
+}
+async function moveBy(ti,n){
+ const t=S.teams[ti];const dir=Math.sign(n);
+ for(let k=0;k<Math.abs(n);k++){
+  const np=t.pos+dir;if(np<0||np>END)break;t.pos=np;refreshBoard(np);sfx.step();await sleep(reduced?40:260);
+ }
+ save();
+}
+function land(){
+ const t=S.teams[S.turn];
+ if(t.pos>=END){finishTeam();return}
+ const ty=LAYOUT[t.pos-1];
+ sfx.open();
+ if(ty==='S')openSituation(draw('situation'));
+ else if(ty==='P')openParlons(draw('parlons'));
+ else if(ty==='D')openDefi(draw('defi'));
+ else if(ty==='J')openJoker(draw('joker'));
+ else if(ty==='R')openMove(-2);
+ else if(ty==='C')openMove(1);
+ else if(ty==='B')openKind();
+ else if(ty==='Z')openPause();
+}
+function advance(){
+ ui.busy=false;
+ if(S.teams.every(t=>t.finished)){S.phase='end';save();return false}
+ let i=S.turn;do{i=(i+1)%S.teams.length;if(i===0)S.round++}while(S.teams[i].finished);
+ S.turn=i;save();return true;
+}
+function nextTurn(){
+ stopTimer();closeModal();
+ if(advance())renderGame();else renderEnd();
+}
+const showT=()=>S.timer>0||!!ui.timer;
+
+/* ================= MODALE ================= */
+function openModal(state){ui.modal=state;renderModal()}
+function closeModal(){ui.modal=null;$('#layer').innerHTML='';}
+function renderModal(){
+ const m=ui.modal;if(!m){$('#layer').innerHTML='';return}
+ const t=S.teams[S.turn];
+ const body=VIEWS[m.view](m,t);
+ const prevScroll=$('.modal')?.scrollTop||0;
+ $('#layer').innerHTML=`<div class="overlay" role="dialog" aria-modal="true" aria-label="${esc(body.label||'Carte')}"><div class="modal">
+  <div class="mhead"><div class="kind">${body.head}</div><div class="kind">${body.timer?timerHTML():''}<span class="pawn" style="background:${t.color};width:38px;height:38px;font-size:19px">${t.avatar}</span><b>${esc(t.name)}</b></div></div>
+  <div class="mbody">${body.html}</div>
+  <div class="mfoot">${body.left||''}${['situation','parlons','defi','kind','reward','finish'].includes(m.view)?`<div class="reactions" aria-label="Réactions de la classe"><span class="rl">La classe réagit</span>${REACTS.map(r=>`<button data-a="react" data-v="${r}" aria-label="Réaction ${r}">${r}</button>`).join('')}</div>`:''}<div class="right">${body.foot||''}</div></div></div></div>`;
+ if(m.keepScroll){$('.modal').scrollTop=prevScroll;m.keepScroll=false}
+ const f=$('.modal [data-focus]')||$('.modal .mfoot .btn-primary');f&&f.focus({preventScroll:true});
+}
+function rerender(){if(ui.modal){ui.modal.keepScroll=true;renderModal()}}
+function jokerBtn(t){return t.jokers.length?`<button class="btn" data-a="usejoker">${I.joker}Utiliser un joker (${t.jokers.length})</button>`:''}
+function kindTag(label,bg,em){return `<span class="kind-tag" style="background:${bg}">${em?`<span class="emoji">${em}</span>`:''}${label}</span>`}
+
+/* --- Timer --- */
+function timerHTML(){
+ const tm=ui.timer;const total=tm?tm.total:S.timer;const left=tm?tm.left:S.timer;
+ const r=16,c=2*Math.PI*r,frac=total?left/total:0;
+ return `<button class="btn timer ${left<=10&&tm?'low':''}" data-a="timer" aria-label="Sablier">
+  <svg class="ring" viewBox="0 0 40 40"><circle cx="20" cy="20" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="5"/><circle cx="20" cy="20" r="${r}" fill="none" stroke="${left<=10&&tm?'var(--red)':'var(--m1)'}" stroke-width="5" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-frac)}" transform="rotate(-90 20 20)" stroke-linecap="round"/></svg>
+  <span id="tleft">${tm?fmt(left):'Sablier '+fmt(S.timer)}</span></button>`;
+}
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function toggleTimer(){
+ if(ui.timer&&ui.timer.id){clearInterval(ui.timer.id);ui.timer.id=null;rerender();return}
+ if(!ui.timer||ui.timer.left<=0)ui.timer={total:S.timer,left:S.timer,id:null};
+ ui.timer.id=setInterval(()=>{ui.timer.left--;if(ui.timer.left<=0){clearInterval(ui.timer.id);ui.timer.id=null;ui.timer.left=0;beep([880,660,880],.15,'square')}
+  const el=$('.mhead .timer');if(el)el.outerHTML=timerHTML()},1000);
+ rerender();
+}
+function stopTimer(){if(ui.timer&&ui.timer.id)clearInterval(ui.timer.id);ui.timer=null}
+
+/* --- Vues --- */
+const STEP_NAMES=['Je reconnais','Je comprends','Je cherche une solution','J\'agis'];
+const VIEWS={
+ situation(m,t){
+  const c=m.card,z=m.zone,steps=STEP_NAMES.slice(0,z),step=m.step;
+  const head=`${kindTag('SITUATION '+c.n,MISSIONS[z].c,'❓')}<span class="cat" style="color:${CATS[c.cat]}">${c.cat}</span>`;
+  const stepper=`<div class="stepper">${steps.map((s,i)=>`<span class="${i===step?'on':i<step?'ok':''}">${i+1}. ${s}</span>`).join('')}<span class="${step===steps.length?'on':''}">Jeton</span></div>`;
+  let html=`<div class="bigtext">${esc(c.text)}</div>${stepper}`;
+  let foot='',left=jokerBtn(t);
+  const name=steps[step];
+  if(step>=steps.length)return VIEWS.reward(m,t);
+  if(name==='Je reconnais'){
+   html+=`<div class="prompt"><b>Mission ${z} · Je reconnais</b>Quelle(s) émotion(s) peut-on ressentir dans cette situation ? Choisis jusqu'à 3 émotions, puis explique ton choix.</div>
+   <div class="emo-grid">${EMOTIONS.map(e=>`<button class="emo" style="background:${e.color}" data-a="pickemo" data-v="${e.id}" aria-pressed="${m.emos.includes(e.id)}">${face(e.id,e.color)}${e.name}</button>`).join('')}</div>`;
+   if(z===1)html+=`<div class="prompt"><b>Pour aller plus loin</b>Comment reconnais-tu cette émotion ? Qu'est-ce que tu pourrais faire ?</div>`;
+  }else if(name==='Je comprends'){
+   html+=`<div class="emo-detail">${m.emos.map(id=>{const e=emo(id);return `<div class="edcard" style="background:${e.color}"><header>${face(e.id,e.color)}<h3>${e.name}</h3></header><p>Je ressens ${e.art} ${e.name.toLowerCase()} ${e.def}</p><p>Je peux ressentir :</p><ul>${e.feel.map(f=>`<li>${f}</li>`).join('')}</ul><div class="q">${e.q}</div></div>`}).join('')}</div>
+   <div class="prompt"><b>Mission 2 · Je comprends</b><ul><li>Qu'est-ce qui, dans cette situation, déclenche cette émotion ?</li><li>Comment le corps réagit-il (cœur, mains, voix, envie de…) ?</li><li>À quoi sert cette émotion ? Qu'est-ce qu'elle nous signale ?</li></ul></div>`;
+  }else if(name==='Je cherche une solution'){
+   html+=`<div class="prompt"><b>Mission 3 · Je cherche une solution</b>Quelle réaction serait adaptée ? Choisis 1 ou 2 solutions et explique pourquoi. Tu peux aussi en inventer une autre.</div>
+   <div class="strat-grid">${STRATS.map(s=>`<button class="strat" data-a="pickstrat" data-v="${s.id}" aria-pressed="${m.strats.includes(s.id)}"><b>${s.t}</b><small>${s.d}</small></button>`).join('')}</div>`;
+  }else if(name==='J\'agis'){
+   const e=m.emos.map(id=>emo(id).name.toLowerCase()).join(' et ')||'…';
+   const st=m.strats.map(id=>STRATS[id].t.toLowerCase()).join(', puis ')||'…';
+   html+=`<div class="prompt"><b>Mission 4 · J'agis</b>Mets-toi en situation : joue la scène en 30 secondes avec un coéquipier, ou dis à voix haute ce que tu dirais vraiment, avec le message clair.</div>
+   <div class="clear-msg">
+    <div><b>Quand…</b><span><em>je décris les faits, sans juger ni accuser :</em> « Quand … »</span></div>
+    <div><b>Je ressens…</b><span>« …je ressens <strong>${esc(e)}</strong>. »</span></div>
+    <div><b>J'ai besoin…</b><span><em>je dis ce dont j'ai besoin :</em> « J'ai besoin de … »</span></div>
+    <div><b>Je propose…</b><span>« Je vais <strong>${esc(st)}</strong>. Est-ce que tu pourrais … ? »</span></div>
+   </div>`;
+  }
+  html+=`<p class="other-teams">Les autres équipes donnent leur avis, écoutent et proposent des idées.</p>`;
+  const canNext=name!=='Je reconnais'||m.emos.length>0;
+  foot=`${step>0?'<button class="btn" data-a="sitprev">Retour</button>':''}<button class="btn btn-primary" data-a="sitnext" ${canNext?'':'disabled'}>${step===steps.length-1?'Mission réussie !':'Étape suivante'}</button>`;
+  return {label:'Carte situation',head,html,foot,left,timer:showT()};
+ },
+ parlons(m,t){
+  const c=m.card;
+  return {label:'Parlons-en',head:kindTag('PARLONS-EN','var(--m3)','💬'),timer:showT(),
+   html:`<div class="question">${c.lines.map(l=>`<p>${esc(l)}</p>`).join('')}</div>
+   <div class="prompt"><b>On en parle ensemble</b>L'équipe répond d'abord, puis chaque équipe peut ajouter une idée. Chacun peut passer s'il ne se sent pas à l'aise.</div>`,
+   left:jokerBtn(t),foot:`<button class="btn btn-primary" data-a="toreward">On en a parlé !</button>`};
+ },
+ defi(m,t){
+  const c=m.card;let extra='';
+  if(c.special==='secret'){
+   const e=m.secret?emo(m.secret):null;
+   extra=`<div class="prompt"><b>Émotion secrète</b>Seul le joueur qui relève le défi regarde l'écran.<div class="secret" style="margin-top:8px">
+    ${e&&m.show?`<span class="reveal" style="background:${e.color}">${e.name}</span><button class="btn" data-a="hidesecret">Cacher</button>`:`<button class="btn" data-a="showsecret">Tirer une émotion secrète</button>`}</div></div>`;
+  }else if(c.special==='rank10'||c.special==='rank5'){
+   extra=`<div class="rank-ends"><span>Plus agréable</span><span>Moins agréable</span></div><ol class="rank" style="padding:0;margin:0">${m.rank.map((id,i)=>{const e=emo(id);return `<li>${face(e.id,e.color)}<span>${e.name}</span><span class="mv"><button data-a="rankup" data-v="${i}" aria-label="Monter ${e.name}" ${i===0?'disabled':''}>↑</button><button data-a="rankdown" data-v="${i}" aria-label="Descendre ${e.name}" ${i===m.rank.length-1?'disabled':''}>↓</button></span></li>`}).join('')}</ol>
+   <div class="prompt"><b>Explique ton choix</b>Une émotion « désagréable » n'est pas une mauvaise émotion : toutes ont une fonction.</div>`;
+  }else if(c.special==='situation'){
+   extra=`<div class="prompt"><b>La situation</b><span style="font-size:20px">${esc(m.sit.text)}</span></div>`;
+  }
+  return {label:'Carte défi',head:`${kindTag('DÉFI '+c.n,'var(--orange)','🎯')}<span class="cat" style="color:var(--orange)">${esc(c.tag)}</span>`,timer:showT(),
+   html:`<div class="bigtext">${esc(c.text)}</div>${extra}`,
+   left:jokerBtn(t),foot:`<button class="btn" data-a="defifail">Pas cette fois</button><button class="btn btn-primary" data-a="toreward">Défi relevé !</button>`};
+ },
+ joker(m,t){
+  const c=m.card;const bg=JK_COLORS[c.n%JK_COLORS.length];
+  return {label:'Carte joker',head:kindTag('JOKER','var(--surface-2)','🃏'),
+   html:`<div class="joker-card" style="background:${bg}"><span class="label" style="color:#1d2340">Joker ${c.n}</span><span class="jt">${esc(c.title)}</span><span class="jd">${esc(c.text)}</span><span class="jl">${esc(c.tag)}</span></div>
+   <p style="text-align:center;font-weight:800;margin:0">${c.effect==='bonus'?'Ce joker s\'utilise tout de suite : ton pion avance de 2 cases.':'Ton équipe garde ce joker et peut l\'utiliser pendant une prochaine carte.'}</p>`,
+   foot:`<button class="btn btn-primary" data-a="${c.effect==='bonus'?'bonus':'keepjoker'}">${c.effect==='bonus'?'Avancer de 2 cases':'Garder le joker'}</button>`};
+ },
+ move(m,t){
+  const back=m.n<0;
+  return {label:back?'Retour':'Chance',head:kindTag(back?'RETOUR EN ARRIÈRE':'CASE CHANCE',back?'var(--pink)':'var(--m2)',back?'⏪':'⭐'),
+   html:`<div class="move-msg"><span class="big-emo emoji">${back?'🙃':'🍀'}</span><span class="big">${back?'−2':'+1'}</span><div class="bigtext">${back?'Tu recules de 2 cases.':'Tu avances d\'une case !'}</div><p class="note">${back?'Pas grave : l\'essentiel, c\'est le chemin parcouru !':'Chaque petit pas est une grande victoire !'}</p></div>`,
+   foot:`<button class="btn btn-primary" data-a="domove">${back?'Reculer':'Avancer'}</button>`};
+ },
+ kind(m,t){
+  const others=S.teams.map((x,i)=>({x,i})).filter(o=>o.i!==S.turn);
+  return {label:'Bienveillance',head:kindTag('CASE BIENVEILLANCE','var(--pink-soft)','💖'),
+   html:`<div class="bigtext">Dis un mot gentil à un joueur d'une autre équipe.</div>
+   <div><span class="label">À qui ?</span><div class="pick-team" style="margin-top:6px">${others.map(o=>`<button data-a="kindto" data-v="${o.i}" aria-pressed="${m.to===o.i}"><span class="pawn" style="background:${o.x.color}">${o.x.avatar}</span>${esc(o.x.name)}</button>`).join('')}</div></div>
+   <div><span class="label">Des idées</span><div class="kind-words" style="margin-top:6px">${KIND_WORDS.map(w=>`<span>${w}</span>`).join('')}</div></div>
+   <p class="note">Un petit geste, un grand effet !</p>`,
+   foot:`<button class="btn btn-primary" data-a="toreward">C'est dit !</button>`};
+ },
+ pause(m,t){
+  return {label:'Pause',head:kindTag('CASE PAUSE','color-mix(in srgb,var(--teal) 45%,var(--surface))','😌'),
+   html:`<div class="bigtext" style="text-align:center">Respire un grand coup avec toute la classe.</div>
+   <div class="breath"><div class="circle ${m.phase==='in'?'in':''}" id="breathCircle">${m.running?(m.phase==='in'?'Inspire…':'Souffle…'):'😌 Prêts ?'}</div>
+   <span class="count">${m.running?`Respiration ${m.cycle} sur 3`:m.done?'Bravo, on est plus calmes !':'3 grandes respirations : 4 secondes pour inspirer, 4 pour souffler.'}</span>
+   ${m.running?'':`<button class="btn" data-a="breathe" data-focus>${m.done?'Recommencer':'Commencer la respiration'}</button>`}</div>
+   <div class="prompt"><b>Ou bien</b>Partage une astuce qui t'aide à te détendre.</div>`,
+   foot:`<button class="btn btn-primary" data-a="endturn">Passer mon tour</button>`};
+ },
+ reward(m,t){
+  const sug=m.suggest??0;
+  if(m.won!=null){const k=TOKENS[m.won];
+   return {label:'Jeton gagné',head:kindTag('JETON MISSION RÉUSSIE','var(--m2)','🏅'),
+    html:`<div class="token-won"><div class="token" style="background:${k.c}">${tokIcon(k.i)}${esc(k.t)}</div><div class="bigtext">${esc(t.name)} gagne un jeton !</div><p class="note">Des émotions aujourd'hui pour des réussites demain !</p></div>`,
+    foot:`<button class="btn btn-primary" data-a="endturn">Joueur suivant</button>`}}
+  return {label:'Choisir un jeton',head:kindTag('JETONS MISSION RÉUSSIE','var(--m2)','🏅'),
+   html:`<div class="prompt"><b>Bravo pour tes efforts !</b>L'enseignant(e) ou la classe choisit le jeton qui correspond le mieux à ce qui vient de se passer.</div>
+   <div class="tokens">${TOKENS.map(k=>`<button class="token ${k.id===sug?'suggested':''}" style="background:${k.c}" data-a="givetoken" data-v="${k.id}">${tokIcon(k.i)}${esc(k.t)}</button>`).join('')}</div>`,
+   foot:`<button class="btn" data-a="endturn">Continuer sans jeton</button>`};
+ },
+ jokers(m,t){
+  return {label:'Jokers',head:kindTag('MES JOKERS','var(--surface-2)'),
+   html:`<div class="jk-list">${t.jokers.map((n,i)=>{const j=JOKERS.find(x=>x.n===n);return `<button data-a="playjoker" data-v="${i}">${I.joker}<span><b>${esc(j.title)}</b><small>${esc(j.text)}</small></span></button>`}).join('')}</div>`,
+   foot:`<button class="btn" data-a="backjoker">Retour à la carte</button>`};
+ },
+ jokerPlayed(m,t){
+  const j=m.joker;const bg=JK_COLORS[j.n%JK_COLORS.length];
+  return {label:'Joker utilisé',head:kindTag('JOKER UTILISÉ','var(--surface-2)'),
+   html:`<div class="joker-card" style="background:${bg}"><span class="jt">${esc(j.title)}</span><span class="jd">${esc(j.text)}</span><span class="jl">${esc(j.tag)}</span></div>
+   ${j.effect==='emotions'?`<div class="ref-grid">${EMOTIONS.map(e=>emoCard(e)).join('')}</div>`:''}
+   ${j.effect==='solutions'?`<div class="strat-grid">${STRATS.map(s=>`<div class="strat"><b>${s.t}</b><small>${s.d}</small></div>`).join('')}</div>`:''}
+   ${j.effect==='choose'?`<div class="jk-list">${m.choices.map(s=>`<button data-a="choosesit" data-v="${s.n}"><span><b>Situation ${s.n} · ${s.cat}</b><small style="font-size:15px;color:var(--ink)">${esc(s.text)}</small></span></button>`).join('')}</div>`:''}`,
+   foot:j.effect==='skip'?`<button class="btn btn-primary" data-a="endturn">Passer mon tour</button>`:j.effect==='choose'?'':`<button class="btn btn-primary" data-a="backjoker">Retour à la carte</button>`};
+ },
+ finish(m,t){
+  return {label:'Mission accomplie',head:kindTag('MISSION ACCOMPLIE !','linear-gradient(90deg,#f2bd2c,#ef5f8a)','🏆'),
+   html:`<div class="move-msg"><span class="pawn" style="background:${t.color};width:90px;height:90px;font-size:46px">${t.avatar}</span>
+   <div class="bigtext">${esc(t.name)} arrive ${t.finished===1?'en premier':'n°'+t.finished} !</div>
+   <p style="font-weight:800;margin:0;max-width:46ch">Mais dans ce jeu, tout le monde est gagnant : chacun apprend et partage. L'essentiel, c'est le chemin parcouru !</p>
+   <p class="note">Je progresse chaque jour !</p></div>`,
+   foot:`<button class="btn" data-a="bilan">Voir le bilan</button>${S.teams.some(x=>!x.finished)?'<button class="btn btn-primary" data-a="endturn">Continuer la partie</button>':''}`};
+ },
+};
+function emoCard(e){return `<div class="edcard" style="background:${e.color}"><header>${face(e.id,e.color)}<h3>${e.name}</h3></header><p>Je ressens ${e.art} ${e.name.toLowerCase()} ${e.def}</p><p>Je peux ressentir :</p><ul>${e.feel.map(f=>`<li>${f}</li>`).join('')}</ul><div class="q">${e.q}</div></div>`}
+
+function openSituation(card){stopTimer();openModal({view:'situation',card,zone:zoneOf(S.teams[S.turn].pos),step:0,emos:[],strats:[],kind:'situation'})}
+function openParlons(card){stopTimer();openModal({view:'parlons',card,kind:'parlons',suggest:6})}
+function openDefi(card){stopTimer();const m={view:'defi',card,kind:'defi',suggest:5};
+ if(card.special==='rank10')m.rank=shuffle(EMOTIONS.map(e=>e.id));
+ if(card.special==='rank5')m.rank=shuffle(['joie','fierte','surprise','tristesse','colere']);
+ if(card.special==='situation')m.sit=DIFFICULT[Math.floor(Math.random()*DIFFICULT.length)];
+ openModal(m)}
+function openJoker(card){openModal({view:'joker',card})}
+function openMove(n){openModal({view:'move',n})}
+function openKind(){openModal({view:'kind',to:null,kind:'kind',suggest:21})}
+function openPause(){openModal({view:'pause',running:false,cycle:0,phase:'out'})}
+async function breathe(){
+ const m=ui.modal;m.running=true;m.done=false;m.cycle=1;m.phase='out';renderModal();
+ const set=(cls,txt,c)=>{const el=$('#breathCircle'),ct=$('.breath .count');if(!el)return;el.classList.toggle('in',cls);el.textContent=txt;if(ct)ct.textContent=`Respiration ${c} sur 3`};
+ await sleep(60);
+ for(let c=1;c<=3;c++){
+  if(ui.modal!==m)return;m.cycle=c;m.phase='in';set(true,'🌬️ Inspire…',c);beep([392],.2,'sine');await sleep(4000);
+  if(ui.modal!==m)return;m.phase='out';set(false,'😮‍💨 Souffle…',c);beep([294],.2,'sine');await sleep(4000);
+ }
+ if(ui.modal!==m)return;m.running=false;m.done=true;renderModal();
+}
+function finishTeam(){
+ const t=S.teams[S.turn];t.pos=END;S.finishOrder++;t.finished=S.finishOrder;save();sfx.win();confetti();
+ openModal({view:'finish'});
+}
+
+/* ================= ÉVÉNEMENTS ================= */
+document.addEventListener('input',e=>{const i=e.target.dataset.team;if(i!=null&&e.target.tagName==='INPUT')setupDraft.teams[i].name=e.target.value});
+document.addEventListener('click',async e=>{
+ const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+ const a=b.dataset.a,v=b.dataset.v;const m=ui.modal;const t=S&&S.teams[S.turn];
+ switch(a){
+  case 'count':setupDraft.count=+v;renderSetup();break;
+  case 'avatar':setupDraft.teams[b.dataset.team].avatar=v;renderSetup();break;
+  case 'timer':if(ui.modal&&S&&S.phase==='game'){toggleTimer()}else{setupDraft.timer=+v;renderSetup()}break;
+  case 'start':startGame();break;
+  case 'resume':S=loadSaved();ui.busy=false;S.phase==='end'?renderEnd():renderGame();break;
+  case 'discard':clearSaved();renderSetup();break;
+  case 'rules':showRules();break;
+  case 'emotions':showEmotions();break;
+  case 'closeinfo':$('#info')&&$('#info').remove();break;
+  case 'sound':ui.sound=!ui.sound;renderGame();break;
+  case 'newgame':askNew();break;
+  case 'confirmnew':$('#info')&&$('#info').remove();S=null;clearSaved();ui.busy=false;closeModal();stopTimer();renderSetup();break;
+  case 'roll':roll();break;
+  case 'pickemo':{const i=m.emos.indexOf(v);if(i>=0)m.emos.splice(i,1);else if(m.emos.length<3)m.emos.push(v);else toast('3 émotions maximum');rerender();break}
+  case 'pickstrat':{const id=+v;const i=m.strats.indexOf(id);if(i>=0)m.strats.splice(i,1);else if(m.strats.length<2)m.strats.push(id);else toast('2 solutions maximum');rerender();break}
+  case 'sitnext':m.step++;if(m.step>=m.zone){recordSituation(m);m.view='reward';m.suggest=suggestToken(m)}renderModal();break;
+  case 'sitprev':m.step=Math.max(0,m.step-1);renderModal();break;
+  case 'toreward':if(m.kind==='defi')S.stats.defis++;if(m.kind==='parlons')S.stats.parlons++;S.stats.cards++;m.view='reward';stopTimer();renderModal();break;
+  case 'defifail':toast('Pas grave, tu réessaieras !');nextTurn();break;
+  case 'givetoken':t.tokens.push(+v);m.won=+v;sfx.token();save();renderModal();burst(['🎉','⭐','✨','🏅','💛'],innerWidth/2,innerHeight/2,14);break;
+  case 'react':burst([v],e.clientX||innerWidth/2,e.clientY||innerHeight/2,5);beep([600+Math.random()*500],.06);break;
+  case 'moodpick':setupDraft.teams[b.dataset.team].mood=v;renderSetup();break;
+  case 'endturn':nextTurn();break;
+  case 'keepjoker':t.jokers.push(m.card.n);save();toast(`${t.name} garde le joker « ${m.card.title} »`);nextTurn();break;
+  case 'bonus':closeModal();await moveBy(S.turn,Math.min(2,END-t.pos));if(t.pos>=END)finishTeam();else nextTurn();break;
+  case 'domove':{const n=m.n;closeModal();if(n<0)sfx.back();await moveBy(S.turn,n);if(t.pos>=END)finishTeam();else nextTurn();break}
+  case 'kindto':m.to=+v;rerender();break;
+  case 'breathe':breathe();break;
+  case 'showsecret':if(!m.secret)m.secret=EMOTIONS[Math.floor(Math.random()*EMOTIONS.length)].id;m.show=true;rerender();break;
+  case 'hidesecret':m.show=false;rerender();break;
+  case 'rankup':case 'rankdown':{const i=+v,j=a==='rankup'?i-1:i+1;[m.rank[i],m.rank[j]]=[m.rank[j],m.rank[i]];rerender();break}
+  case 'usejoker':m.prev=m.view;m.view='jokers';renderModal();break;
+  case 'backjoker':m.view=m.prev;renderModal();break;
+  case 'playjoker':playJoker(+v);break;
+  case 'choosesit':{const s=SITUATIONS.find(x=>x.n===+v);openSituation(s);break}
+  case 'bilan':stopTimer();if(ui.modal){closeModal();advance()}renderEnd();break;
+  case 'backgame':S.phase='game';save();renderGame();break;
+ }
+});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&$('#info')){$('#info').remove();return}
+ if((e.code==='Space')&&S&&S.phase==='game'&&!ui.modal&&!$('#info')&&!['INPUT','BUTTON'].includes(document.activeElement.tagName)){e.preventDefault();roll()}
+});
+function playJoker(i){
+ const t=S.teams[S.turn],m=ui.modal;const n=t.jokers.splice(i,1)[0];const j=JOKERS.find(x=>x.n===n);save();
+ if(j.effect==='swap'){toast('Nouvelle carte !');if(m.kind==='situation')openSituation(draw('situation'));else if(m.kind==='defi')openDefi(draw('defi'));else openParlons(draw('parlons'));return}
+ if(j.effect==='time'){if(ui.timer){ui.timer.left+=60;ui.timer.total+=60}else{ui.timer={total:S.timer+60||60,left:S.timer+60||60,id:null}}toast('+1 minute au sablier')}
+ if(j.effect==='choose'){m.choices=shuffle(SITUATIONS).slice(0,3)}
+ m.joker=j;m.view='jokerPlayed';if(!m.prev||m.prev==='jokers')m.prev='situation';renderModal();
+}
+function recordSituation(m){
+ S.stats.cards++;m.emos.forEach(id=>S.stats.emo[id]=(S.stats.emo[id]||0)+1);m.strats.forEach(id=>S.stats.strat[id]=(S.stats.strat[id]||0)+1);save();
+}
+function suggestToken(m){
+ if(m.zone===1)return 6; if(m.zone===2)return 15; if(m.zone===3)return 3; return 19;
+}
+
+/* ================= INFOS ================= */
+function infoLayer(title,html){
+ $('#info')&&$('#info').remove();
+ const d=document.createElement('div');d.id='info';
+ d.innerHTML=`<div class="overlay" role="dialog" aria-modal="true" aria-label="${esc(title)}" style="z-index:70"><div class="modal"><div class="mhead"><h2>${title}</h2><button class="btn" data-a="closeinfo" data-focus>Fermer</button></div><div class="mbody">${html}</div></div></div>`;
+ document.body.appendChild(d);d.querySelector('[data-focus]').focus();
+}
+function showRules(){
+ infoLayer('Règles du jeu',`<div class="rules">
+  <section><h3>But du jeu</h3><p>Avancer sur le plateau, répondre à des situations de la vie quotidienne et échanger autour des émotions pour mieux se comprendre et mieux vivre ensemble.</p></section>
+  <section><h3>Déroulement</h3><ol><li>L'équipe lance le dé et avance son pion.</li><li>Elle lit la carte de la case et réfléchit : ce qu'elle ressent, ce qu'elle pourrait faire, ce qu'elle en pense.</li><li>Les autres équipes donnent leur avis, écoutent et proposent des idées.</li><li>Un jeton récompense l'effort, puis c'est au tour suivant.</li></ol></section>
+  <section><h3>Les 4 missions</h3><ul>${[1,2,3,4].map(z=>`<li><b>Cases ${(z-1)*10+1}-${z*10} · ${MISSIONS[z].title}</b> : ${MISSIONS[z].sub}</li>`).join('')}</ul><p style="margin-top:6px">Sur une case situation, le nombre d'étapes augmente avec la mission.</p></section>
+  <section><h3>Les cases spéciales</h3><ul><li><b>Parlons-en</b> : une question pour discuter en classe.</li><li><b>Défi</b> : mime, scène, slogan… à relever.</li><li><b>Joker</b> : un coup de pouce à garder pour plus tard.</li><li><b>Mot gentil</b> : dis un mot gentil à un autre joueur.</li><li><b>Pause</b> : respire un grand coup et passe ton tour.</li><li><b>+1</b> : tu avances d'une case. <b>−2</b> : tu recules de 2 cases.</li></ul></section>
+  <section><h3>Fin du jeu</h3><p>La première équipe sur la case Mission accomplie a gagné… mais tout le monde est gagnant, car chacun apprend et partage. L'essentiel, c'est le chemin parcouru !</p></section>
+  <section><h3>Nos engagements</h3><ul><li>Écouter sans se moquer.</li><li>Respecter la parole de chacun.</li><li>Être bienveillant.</li><li>Partager nos idées.</li><li>Laisser la possibilité de passer son tour.</li><li>Profiter du moment !</li></ul></section>
+ </div><p class="note" style="text-align:center">Il n'y a pas de bonne ou de mauvaise réponse. On partage et on s'écoute !</p>`);
+}
+function showEmotions(){infoLayer('Les 10 émotions',`<div class="ref-grid">${EMOTIONS.map(emoCard).join('')}</div><p class="note" style="text-align:center">Toutes les émotions ont une fonction. Ce qui compte, c'est ce que je fais avec elles !</p>`)}
+function askNew(){infoLayer('Nouvelle partie ?',`<p class="bigtext" style="font-size:22px">La partie en cours sera effacée.</p><div class="field-row"><button class="btn btn-primary" data-a="confirmnew">Oui, nouvelle partie</button><button class="btn" data-a="closeinfo">Annuler</button></div>`)}
+function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;d.setAttribute('role','status');document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+
+/* ================= BILAN ================= */
+function renderEnd(){
+ if(S.teams.every(t=>t.finished))S.phase='end';save();
+ const ranked=S.teams.slice().sort((a,b)=>(a.finished||99)-(b.finished||99)||b.pos-a.pos);
+ const emoRows=EMOTIONS.map(e=>({e,n:S.stats.emo[e.id]||0})).sort((a,b)=>b.n-a.n);
+ const maxE=Math.max(1,...emoRows.map(r=>r.n));
+ const stratRows=Object.entries(S.stats.strat).map(([id,n])=>({s:STRATS[id],n})).sort((a,b)=>b.n-a.n).slice(0,6);
+ const maxS=Math.max(1,...stratRows.map(r=>r.n));
+ const totalTok=S.teams.reduce((s,t)=>s+t.tokens.length,0);
+ $('#app').innerHTML=`
+ <header class="topbar"><span class="logo"><span class="brush">MISSION <span class="rainbow">${[...'ÉMOTIONS'].map(c=>`<span>${c}</span>`).join('')}</span></span></span>
+  <div class="tools">${S.teams.some(t=>!t.finished)?'<button class="btn" data-a="backgame">Retour au plateau</button>':''}<button class="btn btn-primary" data-a="confirmnew">${I.reset}Nouvelle partie</button></div></header>
+ <main style="display:grid;gap:20px">
+  <section class="panel"><h2>Bilan de la mission</h2>
+   <p style="margin:0;font-weight:800;font-size:18px">${S.stats.cards} cartes jouées · ${totalTok} jetons gagnés · ${Object.values(S.stats.emo).reduce((a,b)=>a+b,0)} émotions nommées · ${S.stats.defis} défis relevés</p>
+   <div class="podium">${ranked.map(t=>`<div class="prow"><span class="pawn" style="background:${t.color}">${t.avatar}</span><div style="min-width:0"><h3>${esc(t.name)} ${t.finished?`<span class="done-badge">Arrivée n°${t.finished}</span>`:`<span class="hint">case ${t.pos}</span>`}</h3>
+    <div class="mini-tokens">${t.tokens.length?t.tokens.map(id=>`<span style="background:${TOKENS[id].c}">${esc(TOKENS[id].t)}</span>`).join(''):'<span class="empty">Pas encore de jeton</span>'}</div></div></div>`).join('')}</div>
+  </section>
+  <div class="two">
+   <section class="panel"><h2>Les émotions nommées</h2>
+    ${emoRows.some(r=>r.n)?`<div class="chart">${emoRows.map(r=>`<div class="row"><span>${r.e.name}</span><span class="track"><i style="width:${r.n/maxE*100}%;background:${r.e.color}"></i></span><span class="v">${r.n}</span></div>`).join('')}</div>`:'<p class="empty">Les émotions choisies sur les cartes situations apparaîtront ici.</p>'}
+   </section>
+   <section class="panel"><h2>Les solutions choisies</h2>
+    ${stratRows.length?`<div class="chart">${stratRows.map(r=>`<div class="row" style="grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 28px"><span>${r.s.t}</span><span class="track"><i style="width:${r.n/maxS*100}%;background:var(--m3)"></i></span><span class="v">${r.n}</span></div>`).join('')}</div>`:'<p class="empty">Les solutions apparaissent à partir de la mission 3 (cases 21 à 40).</p>'}
+   </section>
+  </div>
+  <section class="panel"><h2>Temps d'échange</h2>
+   <div class="rules">
+    <section><h3>Ce que j'ai appris</h3><ul><li>Quelle émotion a été la plus difficile à reconnaître ?</li><li>Une situation qui t'a fait réfléchir ?</li></ul></section>
+    <section><h3>Ce que je retiens</h3><ul><li>Une solution que tu pourrais utiliser cette semaine ?</li><li>Au lycée, en stage, à la maison : où en aurais-tu besoin ?</li></ul></section>
+    <section><h3>Les autres</h3><ul><li>Une idée d'un camarade qui t'a aidé ?</li><li>Comment t'es-tu senti(e) pendant le jeu ?</li></ul></section>
+    <section><h3>Mon passeport</h3><p>Chacun complète son passeport élève : une émotion, une solution, une fierté.</p></section>
+   </div>
+   <p class="note" style="text-align:center">Des élèves plus sereins, plus confiants, plus solidaires… Mission émotions : grandir ensemble !</p>
+  </section>
+ </main>`;
+}
+
+/* ================= CONFETTIS ================= */
+function confetti(){
+ if(reduced)return;const cv=$('#confetti');cv.hidden=false;const ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;
+ const cols=['#3d97e8','#f2bd2c','#4fbf6c','#9b6ee0','#ef5f8a','#f5873a'];
+ const ps=Array.from({length:160},()=>({x:cv.width/2,y:cv.height*.35,vx:(Math.random()-.5)*16,vy:Math.random()*-14-4,s:6+Math.random()*7,c:cols[Math.floor(Math.random()*6)],r:Math.random()*6,vr:(Math.random()-.5)*.4,e:Math.random()<.22?['😄','🎉','⭐','🏆','💖','😎'][Math.floor(Math.random()*6)]:null}));
+ let f=0;(function tick(){ctx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);if(p.e){ctx.font=(p.s*3)+'px sans-serif';ctx.fillText(p.e,0,0)}else{ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2)}ctx.restore()});
+ if(++f<170)requestAnimationFrame(tick);else{ctx.clearRect(0,0,cv.width,cv.height);cv.hidden=true}})();
+}
+
+function rollPop(v){const d=document.createElement('div');d.className='rollpop';d.innerHTML=`<span class="emoji">🎲</span> ${v} !`;document.body.appendChild(d);setTimeout(()=>d.remove(),1150)}
+function burst(list,x,y,n){if(reduced)n=Math.min(n,2);for(let k=0;k<n;k++){const f=document.createElement('span');f.className='fly';f.textContent=list[k%list.length];
+ f.style.left=(x-19+(Math.random()-.5)*60)+'px';f.style.top=(y-19)+'px';f.style.setProperty('--dx',((Math.random()-.5)*240)+'px');f.style.setProperty('--rot',((Math.random()-.5)*80)+'deg');f.style.animationDelay=(k*0.05)+'s';
+ document.body.appendChild(f);setTimeout(()=>f.remove(),1800+k*50)}}
+(function floaters(){const box=document.getElementById('floaters');const em=['😄','😢','😠','😨','😲','🤢','😤','😰','😎','😞','💛','⭐','💬','🎲'];
+ box.innerHTML=em.map((e,i)=>`<span style="left:${(i*7.3+3)%96}%;--sz:${26+(i*7)%26}px;--d:${18+(i*5)%16}s;--dl:-${(i*3.1)%20}s;${reduced?`top:${(i*13)%90}%;animation:none`:''}">${e}</span>`).join('')})();
+/* ================= DÉMARRAGE ================= */
+function start(data){
+ if(data&&data.S){S=data.S;ui.busy=false;S.phase==='end'?renderEnd():renderGame();return}
+ renderSetup();
+}
+window.claude?.hot?.snapshot?.(()=>({S}));
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+</script>
+
+</body>
+</html>
